@@ -1,0 +1,51 @@
+{
+  "name": "backend-jwt",
+  "version": "1.0.0",
+  "description": "NestJS API Starter with JWT Authentication",
+  "author": "",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
+    "migrate": "npx typeorm-ts-node-commonjs migration:run -d migration-data-source.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.0.1",
+    "@nestjs/config": "4.0.2",
+    "@nestjs/core": "11.0.1",
+    "@nestjs/jwt": "11.0.0",
+    "@nestjs/passport": "11.0.5",
+    "@nestjs/platform-express": "11.0.1",
+    "@nestjs/swagger": "11.2.0",
+    "@nestjs/typeorm": "11.0.0",
+    "argon2": "0.43.0",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.2",
+    "helmet": "8.1.0",
+    "passport": "0.7.0",
+    "passport-jwt": "4.0.1",
+    "passport-local": "1.0.0",
+    "pg": "8.16.3",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.1",
+    "typeorm": "0.3.24"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "11.0.0",
+    "@nestjs/schematics": "11.0.0",
+    "@types/express": "5.0.0",
+    "@types/node": "22.10.7",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
+    "@types/pg": "8.15.4",
+    "prettier": "3.4.2",
+    "ts-node": "10.9.2",
+    "tsconfig-paths": "4.2.0",
+    "typescript": "5.7.3"
+  }
+}

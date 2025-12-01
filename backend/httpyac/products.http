@@ -1,0 +1,47 @@
+@baseUrl = http://localhost:3000/api
+@accessToken = {{login.response.body.accessToken}}
+
+### Login first to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### Get All Products
+GET {{baseUrl}}/products
+Authorization: Bearer {{accessToken}}
+
+### Get Product by ID
+GET {{baseUrl}}/products/1
+Authorization: Bearer {{accessToken}}
+
+### Create Product
+POST {{baseUrl}}/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "sku": "SKU-001",
+  "description": "A test product",
+  "price": 99.99,
+  "stock": 100
+}
+
+### Update Product
+PATCH {{baseUrl}}/products/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Product Name",
+  "price": 149.99
+}
+
+### Delete Product
+DELETE {{baseUrl}}/products/1
+Authorization: Bearer {{accessToken}}
