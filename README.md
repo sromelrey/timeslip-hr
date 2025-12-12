@@ -1,65 +1,64 @@
-# JWT Starter Template
+# Mini HRIS (Timekeeping + Payslips) — JWT Starter Template
 
-A fullstack starter template using **JWT (JSON Web Token)** authentication, mirroring the structure of the original `starter-template` but replacing server-side sessions with token-based auth.
+A fullstack starter template for building a **Mini HRIS** with **JWT (JSON Web Token)** authentication.  
+It supports **employee time logging** (clock in/out, break in/out) and **admin payroll workflows** (timesheets, pay periods, payslip generation), using a modern NestJS + Next.js stack.
+
+## What this app does (core scope)
+
+### Employee-facing
+- Clock In
+- Clock Out
+- Break In
+- Break Out
+- View current status (clocked in / on break / clocked out)
+- (Optional) View/download payslips
+
+### Admin-facing
+- Manage employees (basic CRUD)
+- Review time logs and computed timesheets
+- Create/manage pay periods
+- Generate payslips from time records (with export options)
+
+## Authentication & Roles
+
+This template uses **token-based authentication**:
+- **Access token** (short-lived) + **Refresh token** (rotating)
+- Designed to support multiple clients (web, mobile, kiosk)
+
+Roles (typical):
+- **ADMIN** – can manage employees, timesheets, pay periods, payslips, settings
+- **EMPLOYEE** – can submit time events and view own data
 
 ## When to use this template
 
 Use this JWT-based starter when:
+- You want stateless auth that scales well across instances.
+- You plan to support multiple clients (e.g., admin web + employee kiosk + mobile).
+- You want explicit access/refresh token handling and rotation.
 
-- You need to support multiple clients (SPAs, mobile apps, third-party services) calling the same API.
-- You want stateless authentication that scales well across instances and microservices.
-- You prefer an explicit access/refresh token flow with rotation and short-lived access tokens.
-
-Consider the **session-based starter** (`starter-template/`) instead when:
-
+Consider a **session-based** starter instead when:
 - Your app is primarily server-rendered and browser-only.
-- You are comfortable with cookie-based sessions and don't need tokens outside the browser.
+- You prefer cookie-based sessions without managing tokens on multiple clients.
 
 ## Structure
 
 - `backend/` – NestJS API with JWT auth, TypeORM, PostgreSQL, Swagger, Docker
 - `frontend/` – Next.js 15 App Router, Redux Toolkit, Axios with JWT interceptors, TailwindCSS
 
-## Quick Start
+## Key Modules (planned)
 
-### Backend
+### Backend (NestJS)
+- Auth (JWT access/refresh, role guards)
+- Employees (employee profiles and employment details)
+- Time Events (clock in/out, break in/out with state validation)
+- Timesheets (computed summaries and anomaly flags)
+- Pay Periods (open/close payroll windows)
+- Payslips (calculation + PDF/export support)
+- Settings (timezone, rounding rules, overtime/break policies)
 
-1. Go to the backend folder:
-   ```bash
-   cd starter-template-jwt/backend
-   ```
-2. Copy env file and configure values:
-   ```bash
-   cp env.example .env
-   ```
-3. Run with Docker (Postgres + API):
-   ```bash
-   docker compose up -d
-   ```
-   Or run locally:
-   ```bash
-   npm install
-   npm run start:dev
-   ```
-
-### Frontend
-
-1. Go to the frontend folder:
-   ```bash
-   cd starter-template-jwt/frontend
-   ```
-2. Copy env file and configure API URL:
-   ```bash
-   cp env.example .env.local
-   ```
-3. Install deps and start dev server:
-   ```bash
-   npm install
-   npm run dev
-   ```
-
-## Documentation
-
-- Backend details: `starter-template-jwt/backend/README.md`
-- Frontend details: `starter-template-jwt/frontend/README.md`
-- High-level plan and design: `jwt-starter-plan.md` at the repo root
+### Frontend (Next.js)
+- Employee Time Kiosk UI (employee number + actions + status)
+- Admin Dashboard (attendance overview)
+- Admin Timesheets (review, adjust, approve/lock)
+- Admin Payslips (generate, preview, export)
+- Settings screens (basic policies)
