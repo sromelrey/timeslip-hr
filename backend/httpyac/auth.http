@@ -1,28 +1,41 @@
 @baseUrl = http://localhost:3000/api
 @accessToken = {{login.response.body.accessToken}}
-@refreshToken = {{login.response.body.refreshToken}}
 
-### Login
+### Register (Create Company + Admin)
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "companyName": "TechCorp Solutions {{ $randomInt 100 999 }}",
+  "firstName": "Alice",
+  "lastName": "Admin",
+  "email": "alice.admin{{ $randomInt 100 999 }}@techcorp.com",
+  "password": "SecurePassword123!"
+}
+
+### Login with New User
 # @name login
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@example.com",
-  "password": "password123"
+  "email": "{{register.response.body.user.email}}",
+  "password": "SecurePassword123!"
 }
 
+### Get Profile (Me)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
 ### Refresh Token
+# @name refresh
 POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {
-  "refreshToken": "{{refreshToken}}"
+  "refreshToken": "{{login.response.body.refreshToken}}"
 }
-
-### Get Current User Profile
-GET {{baseUrl}}/auth/me
-Authorization: Bearer {{accessToken}}
 
 ### Logout
 POST {{baseUrl}}/auth/logout

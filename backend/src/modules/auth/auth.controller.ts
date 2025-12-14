@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './providers/auth.service';
-import { LoginDto, RefreshTokenDto } from './dtos';
+import { LoginDto, RefreshTokenDto, RegisterDto } from './dtos';
 import { LocalAuthGuard } from '@/guards/local-auth.guard';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { User } from '@/entities/user.entity';
@@ -20,6 +20,13 @@ import { User } from '@/entities/user.entity';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new company and admin user' })
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
 
   @Post('login')
   @UseGuards(LocalAuthGuard)

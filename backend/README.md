@@ -17,15 +17,25 @@ NestJS API with JWT-based authentication, TypeORM, and PostgreSQL.
 # Install dependencies
 npm install
 
-# Copy environment file
+# Create environment file
 cp env.example .env
+
+# (Optional) Create .env.local for local overrides
+# .env.local is gitignored and takes precedence over .env
+# Use this for local database passwords, ports, etc.
+cp env.example .env.local
 
 # Run with Docker
 docker compose up -d
 
+# Seed the database (optional)
+npm run seed
+
 # Or run locally (requires PostgreSQL)
 npm run start:dev
 ```
+
+> **Note**: If you have a local PostgreSQL instance running on port 5432, the Docker container is configured to use port 5433 to avoid conflicts. Update your `DATABASE_URL` in `.env.local` accordingly.
 
 ## Environment Variables
 

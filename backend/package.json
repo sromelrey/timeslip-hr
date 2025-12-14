@@ -12,7 +12,8 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
-    "migrate": "npx typeorm-ts-node-commonjs migration:run -d migration-data-source.ts"
+    "migrate": "npx typeorm-ts-node-commonjs migration:run -d migration-data-source.ts",
+    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seeder.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.0.1",
@@ -43,6 +44,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
     "@types/pg": "8.15.4",
+    "dotenv": "^17.2.3",
     "prettier": "3.4.2",
     "ts-node": "10.9.2",
     "tsconfig-paths": "4.2.0",

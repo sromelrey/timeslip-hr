@@ -16,8 +16,8 @@ import { ProductModule } from './modules/product/product.module';
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.getOrThrow<string>('DATABASE_URL'),
-        autoLoadEntities: true,
-        synchronize: false, // Set to false in production
+        entities: [__dirname + '/entities/*.entity{.ts,.js}'], // Load all entity files
+        synchronize: true, // Auto-create tables in development (set to false in production)
         ssl: false,
       }),
     }),
