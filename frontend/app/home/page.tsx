@@ -1,11 +1,13 @@
 
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/auth";
 import AnalogClock from "@/components/AnalogClock";
 import TimeEntryForm, { TimeLog } from "@/components/TimeEntryForm";
 import RecentLogs from "@/components/RecentLogs";
 import { Separator } from "@/components/ui/separator";
-import { Clock } from "lucide-react";
+import { Clock, LogOut } from "lucide-react";
 
 // Initial dummy data
 const initialLogs: TimeLog[] = [
@@ -42,10 +44,17 @@ const initialLogs: TimeLog[] = [
 ];
 
 const Index = () => {
+  const router = useRouter();
+  const { logout, user } = useAuth();
   const [logs, setLogs] = useState<TimeLog[]>(initialLogs);
 
   const handleLogEntry = (log: TimeLog) => {
     setLogs((prevLogs) => [log, ...prevLogs]);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/sign-in');
   };
 
   return (
@@ -53,13 +62,29 @@ const Index = () => {
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary rounded-lg">
-              <Clock className="w-6 h-6 text-primary-foreground" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary rounded-lg">
+                <Clock className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">TimeKeeper</h1>
+                <p className="text-sm text-muted-foreground">HRIS Time Management</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">TimeKeeper</h1>
-              <p className="text-sm text-muted-foreground">HRIS Time Management</p>
+            <div className="flex items-center gap-4">
+              {user && (
+                <div className="text-sm text-muted-foreground">
+                  Welcome, <span className="font-medium text-foreground">{user.firstName || user.name}</span>
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useSignInForm } from '@/hooks/sign-in/use-sign-in-form';
+import { useAuth } from '@/hooks/auth';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -11,7 +12,13 @@ export default function SignInPage() {
   const onSubmit = async (e: React.FormEvent) => {
     const success = await handleSubmit(e);
     if (success) {
-      router.push('/products');
+      // Get the user from the auth store to check role
+      const { user } = useAuth();
+      if (user?.role === 'EMPLOYEE') {
+        router.push('/home');
+      } else {
+        router.push('/products');
+      }
     }
   };
 
@@ -23,7 +30,7 @@ export default function SignInPage() {
             Sign in to your account
           </h2>
           <p className='mt-2 text-center text-sm text-gray-600'>
-            JWT Authentication Demo
+            Timeslip HR
           </p>
         </div>
         <form className='mt-8 space-y-6' onSubmit={onSubmit}>

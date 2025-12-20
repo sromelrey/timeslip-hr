@@ -3,28 +3,33 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProductModule } from './modules/product/product.module';
+import { EmployeeModule } from './modules/employee/employee.module';
+import { TimesheetModule } from './modules/timesheet/timesheet.module';
 
 @Module({
   imports: [
     // Global config module
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     
     // Database configuration
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        url: config.getOrThrow<string>('DATABASE_URL'),
-        entities: [__dirname + '/entities/*.entity{.ts,.js}'], // Load all entity files
-        synchronize: true, // Auto-create tables in development (set to false in production)
-        ssl: false,
+        url: configService.get('DATABASE_URL'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true, // Auto-create tables (dev only)
       }),
+      inject: [ConfigService],
     }),
     
     // Feature modules
     AuthModule,
     ProductModule,
+    EmployeeModule,
+    TimesheetModule,
   ],
 })
 export class AppModule {}

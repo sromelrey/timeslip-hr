@@ -25,7 +25,10 @@ cp env.example .env
 # Use this for local database passwords, ports, etc.
 cp env.example .env.local
 
-# Run with Docker
+# Stop and remove containers AND volumes (this deletes existing data!)
+docker compose down -v
+
+# Start fresh with the new password
 docker compose up -d
 
 # Seed the database (optional)

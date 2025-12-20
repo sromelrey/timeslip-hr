@@ -1,0 +1,73 @@
+### Admin Login (establish session cookie)
+# @name adminLogin
+POST {{API_BASE_URL}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{TEST_EMPLOYEE}}",
+  "password": "{{TEST_USER_PASSWORD}}"
+}
+
+### Get All Employees
+GET {{API_BASE_URL}}/employees
+Authorization: Bearer {{adminLogin.accessToken}}
+
+### Get Employee by ID
+GET {{API_BASE_URL}}/employees/1
+Authorization: Bearer {{adminLogin.accessToken}}
+
+### Create Employee
+POST {{API_BASE_URL}}/employees
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "companyId": 1,
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "department": "HR",
+  "position": "HR Manager",
+  "employmentType": "SALARIED",
+  "isActive": true,
+  "hiredAt": "2025-01-15"
+}
+
+### Update Employee
+PATCH {{API_BASE_URL}}/employees/1
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "position": "Senior HR Manager",
+  "department": "HR & Admin"
+}
+
+### Delete Employee
+DELETE {{API_BASE_URL}}/employees/1
+Authorization: Bearer {{adminLogin.accessToken}}
+
+### Add Compensation
+POST {{API_BASE_URL}}/employees/1/compensation
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "type": "HOURLY",
+  "hourlyRate": 25.50,
+  "effectiveFrom": "2026-01-01"
+}
+
+### Add Daily Compensation
+POST {{API_BASE_URL}}/employees/1/compensation
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "type": "DAILY",
+  "dailyRate": 200.00,
+  "effectiveFrom": "2026-02-01"
+}
+
+### Get Compensation History
+GET {{API_BASE_URL}}/employees/1/compensation
+Authorization: Bearer {{adminLogin.accessToken}}

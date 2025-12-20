@@ -11,6 +11,7 @@ import { Payslip } from './payslip.entity';
 export enum EmploymentType {
   HOURLY = 'HOURLY',
   SALARIED = 'SALARIED',
+  DAILY = 'DAILY',
 }
 
 @Entity('employees')
@@ -24,8 +25,8 @@ export class Employee extends CommonEntity {
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @Column({ name: 'employee_number', type: 'varchar', length: 50 })
-  employeeNumber: string;
+  @Column({ name: 'employee_number', type: 'int' })
+  employeeNumber: number;
 
   @Column({ name: 'first_name', type: 'varchar', length: 100 })
   firstName: string;

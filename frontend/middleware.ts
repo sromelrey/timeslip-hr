@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require authentication
-const protectedRoutes = ['/products'];
+const protectedRoutes = ['/products', '/home'];
 
 // Routes only for non-authenticated users
 const authRoutes = ['/sign-in'];

@@ -7,6 +7,7 @@ import { User } from './user.entity';
 export enum CompensationType {
   HOURLY = 'HOURLY',
   SALARIED = 'SALARIED',
+  DAILY = 'DAILY',
 }
 
 @Entity('employee_compensation')
@@ -24,6 +25,9 @@ export class EmployeeCompensation extends CommonEntity {
 
   @Column({ name: 'hourly_rate', type: 'decimal', precision: 12, scale: 2, nullable: true })
   hourlyRate?: number | null;
+  
+  @Column({ name: 'daily_rate', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  dailyRate?: number | null;
 
   @Column({ name: 'monthly_salary', type: 'decimal', precision: 12, scale: 2, nullable: true })
   monthlySalary?: number | null;

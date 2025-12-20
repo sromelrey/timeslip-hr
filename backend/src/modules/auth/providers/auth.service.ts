@@ -145,6 +145,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       isActive: user.isActive,
+      role: user.role,
     };
   }
 }

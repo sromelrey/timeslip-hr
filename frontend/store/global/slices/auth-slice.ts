@@ -8,6 +8,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   isActive: boolean;
+  role: string;
 }
 
 interface AuthState {

@@ -3,6 +3,9 @@ import * as argon2 from 'argon2';
 import * as dotenv from 'dotenv';
 import { Company } from '../../entities/company.entity';
 import { User, UserRole } from '../../entities/user.entity';
+import { Employee, EmploymentType } from '../../entities/employee.entity';
+import { PayPeriod, PayPeriodStatus } from '../../entities/pay-period.entity';
+import { EmployeeCompensation } from '../../entities/employee-compensation.entity';
 
 dotenv.config();
 
@@ -11,7 +14,7 @@ dotenv.config();
 // For this script, we'll try to use environment variables or fallback to defaults matching docker-compose.
 const dataSource = new DataSource({
   type: 'postgres',
-  url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/starter_jwt_db',
+  url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/timeslip_hr_db',
   entities: [__dirname + '/../../entities/*.entity.{ts,js}'], // Load all entities to satisfy relations
   synchronize: true, // Create tables if they don't exist
 });
@@ -25,6 +28,7 @@ async function seed() {
 
     const companyRepo = dataSource.getRepository(Company);
     const userRepo = dataSource.getRepository(User);
+    const employeeRepo = dataSource.getRepository(Employee);
 
     // 1. Create Company
     const companyName = 'Acme Corp';
@@ -60,14 +64,37 @@ async function seed() {
       console.log(`Admin ${adminEmail} already exists`);
     }
 
-    // 3. Create Employee User
+    // 3. Create Employee User with Employee Record
     const employeeEmail = 'employee@example.com';
-    let employee = await userRepo.findOne({ where: { email: employeeEmail } });
+    let employeeUser = await userRepo.findOne({ 
+      where: { email: employeeEmail },
+      relations: ['employee']
+    });
 
-    if (!employee) {
-      console.log(`Creating employee: ${employeeEmail}`);
+    if (!employeeUser) {
+      console.log(`Creating employee user: ${employeeEmail}`);
       const passwordHash = await argon2.hash('password123');
-      employee = userRepo.create({
+      
+      // First create the Employee record (employeeNumber will be auto-generated manually for seed)
+      const currentYear = new Date().getFullYear();
+      const initialEmployeeNumber = (currentYear * 1000) + 1; // e.g., 2025001
+      
+      const employeeRecord = employeeRepo.create({
+        company: company,
+        employeeNumber: initialEmployeeNumber,
+        firstName: 'John',
+        lastName: 'Doe',
+        department: 'Engineering',
+        position: 'Software Developer',
+        employmentType: EmploymentType.DAILY,
+        isActive: true,
+        hiredAt: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+      });
+      const savedEmployee = await employeeRepo.save(employeeRecord);
+      console.log(`Created employee record with number: ${savedEmployee.employeeNumber}`);
+      
+      // Then create the User and link to Employee
+      employeeUser = userRepo.create({
         email: employeeEmail,
         passwordHash,
         firstName: 'John',
@@ -75,11 +102,66 @@ async function seed() {
         displayName: 'John Doe',
         role: UserRole.EMPLOYEE,
         company: company,
+        employee: savedEmployee,
         isActive: true,
       });
-      await userRepo.save(employee);
+      await userRepo.save(employeeUser);
+      console.log(`Created user linked to employee: ${employeeEmail}`);
     } else {
-      console.log(`Employee ${employeeEmail} already exists`);
+      console.log(`Employee user ${employeeEmail} already exists`);
+      
+      // Check if the user has an employee record
+      if (!employeeUser.employee) {
+        console.log(`Creating employee record for existing user: ${employeeEmail}`);
+        
+        // Create the Employee record (employeeNumber will be auto-generated manually for seed)
+        const currentYear = new Date().getFullYear();
+        const initialEmployeeNumber = (currentYear * 1000) + 1; // e.g., 2025001
+
+        const employeeRecord = employeeRepo.create({
+          company: company,
+          employeeNumber: initialEmployeeNumber,
+          firstName: employeeUser.firstName || 'John',
+          lastName: employeeUser.lastName || 'Doe',
+          department: 'Engineering',
+          position: 'Software Developer',
+          employmentType: EmploymentType.DAILY,
+          isActive: true,
+          hiredAt: new Date().toISOString().split('T')[0],
+        });
+        const savedEmployee = await employeeRepo.save(employeeRecord);
+        console.log(`Created employee record with number: ${savedEmployee.employeeNumber}`);
+        
+        // Link the employee to the user
+        employeeUser.employee = savedEmployee;
+        await userRepo.save(employeeUser);
+        console.log(`Linked employee record to user: ${employeeEmail}`);
+      } else {
+        console.log(`Employee record already linked to user: ${employeeEmail}`);
+      }
+    }
+
+    // 4. Create PayPeriod
+    const payPeriodRepo = dataSource.getRepository(PayPeriod);
+    const compensationRepo = dataSource.getRepository(EmployeeCompensation);
+
+    const today = new Date();
+    // ... rest of payPeriod logic ...
+    
+    // Add Compensation for John Doe if not exists
+    if (employeeUser && employeeUser.employee) {
+        const existingComp = await compensationRepo.findOneBy({ employeeId: employeeUser.employee.id });
+        if (!existingComp) {
+            console.log('Creating initial compensation for John Doe');
+            const comp = compensationRepo.create({
+                employee: employeeUser.employee,
+                type: 'DAILY' as any,
+                dailyRate: 200.00,
+                effectiveFrom: new Date().toISOString().split('T')[0],
+            });
+            await compensationRepo.save(comp);
+            console.log('✅ Created compensation record');
+        }
     }
 
     console.log('✅ Seeding complete!');
