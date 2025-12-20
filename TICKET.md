@@ -3,51 +3,51 @@
 ## Epic 1: Foundations, Architecture, and DevOps
 
 ### Feature: Define core domain model and business rules
-- [ ] Define core entities and relationships (Employee, Admin/User, TimeLog, Timesheet, PayPeriod, Payslip, Settings)
-  - [ ] Document TimeLog state machine (Clocked Out → Clocked In → Break In/Out → Clock Out)
-  - [ ] Define validation rules (no overlapping sessions, required sequences, idempotency on submissions)
-- [ ] Define pay and time computation rules (rounding, grace periods, overtime rules if any)
-  - [ ] Specify how break time impacts paid hours (paid/unpaid breaks)
+- [x] Define core entities and relationships (Employee, Admin/User, TimeLog, Timesheet, PayPeriod, Payslip, Settings)
+  - [x] Document TimeLog state machine (Clocked Out → Clocked In → Break In/Out → Clock Out)
+  - [x] Define validation rules (no overlapping sessions, required sequences, idempotency on submissions)
+- [x] Define pay and time computation rules (rounding, grace periods, overtime rules if any)
+  - [x] Specify how break time impacts paid hours (paid/unpaid breaks)
 
 ### Feature: Set up backend scaffolding
-- [ ] Initialize backend project (API routing, config, validation, error handling)
-- [ ] Set up database schema and migrations
-  - [ ] Create tables for users/employees, time logs, pay periods, payslips, settings
-- [ ] Implement shared utilities (date/time helpers, money helpers, audit logging)
+- [x] Initialize backend project (API routing, config, validation, error handling)
+- [x] Set up database schema and migrations
+  - [x] Create tables for users/employees, time logs, pay periods, payslips, settings
+- [x] Implement shared utilities (date/time helpers, money helpers, audit logging)
 
 ### Feature: Set up frontend scaffolding
-- [ ] Initialize frontend project (routing, layouts, state management, UI kit)
-- [ ] Implement role-based routing guards (Employee vs Admin)
+- [x] Initialize frontend project (routing, layouts, state management, UI kit)
+- [x] Implement role-based routing guards (Employee vs Admin)
 
 ### Feature: CI/CD and basic observability
-- [ ] Configure CI pipeline (lint, tests, build)
-- [ ] Configure deployment pipeline (staging/prod)
-- [ ] Implement basic logging/monitoring hooks (API request logs, error boundaries)
+- [x] Configure CI pipeline (lint, tests, build)
+- [x] Configure deployment pipeline (staging/prod)
+- [x] Implement basic logging/monitoring hooks (API request logs, error boundaries)
 
 ---
 
 ## Epic 2: Authentication, Authorization, and User Management
 
 ### Feature: Authentication (Employee + Admin)
-- [ ] Implement login flow for employees using Employee Number + optional PIN
-  - [ ] Create employee login UI
-  - [ ] Implement API endpoint for employee authentication
+- [/] Implement login flow for employees using Employee Number + optional PIN
+  - [x] Create employee login UI
+  - [/] Implement API endpoint for employee authentication
   - [ ] Implement session/token storage and renewal
-- [ ] Implement admin login (email/username + password)
-  - [ ] Create admin login UI
-  - [ ] Implement API endpoint for admin authentication
+- [x] Implement admin login (email/username + password)
+  - [x] Create admin login UI
+  - [x] Implement API endpoint for admin authentication
 
 ### Feature: Authorization and role-based access control
-- [ ] Implement RBAC middleware/guards on backend
-  - [ ] Define permissions (e.g., view/edit timesheets, generate payslips, manage employees)
-- [ ] Implement frontend route guards and UI gating
-  - [ ] Hide admin-only actions from employee UI
+- [x] Implement RBAC middleware/guards on backend
+  - [x] Define permissions (e.g., view/edit timesheets, generate payslips, manage employees)
+- [/] Implement frontend route guards and UI gating
+  - [/] Hide admin-only actions from employee UI
 
 ### Feature: Employee and admin account management (Admin-facing)
-- [ ] Implement CRUD for employees (create, activate/deactivate, update details)
-  - [ ] Create admin UI for employee list + employee detail
-  - [ ] Implement API endpoints for employee CRUD
-  - [ ] Add validation (unique employee number, required fields)
+- [x] Implement CRUD for employees (create, activate/deactivate, update details)
+  - [x] Create admin UI for employee list + employee detail
+  - [x] Implement API endpoints for employee CRUD
+  - [x] Add validation (unique employee number, required fields)
 - [ ] Implement password/PIN management
   - [ ] Implement admin reset PIN/password actions
   - [ ] Implement employee change PIN/password (optional)
@@ -57,11 +57,11 @@
 ## Epic 3: Employee Time Logging (Clock In/Out + Break In/Out)
 
 ### Feature: Employee time kiosk / time logging UI
-- [ ] Build employee time logging screen (Employee Number input + action buttons)
-  - [ ] Display current server time and employee status (e.g., “Clocked In”, “On Break”)
-  - [ ] Show last action and timestamp for confirmation
-- [ ] Implement “analog clock” widget in UI (optional)
-  - [ ] Add fallback to digital clock on unsupported browsers
+- [x] Build employee time logging screen (Employee Number input + action buttons)
+  - [x] Display current server time and employee status (e.g., “Clocked In”, “On Break”)
+  - [x] Show last action and timestamp for confirmation
+- [x] Implement “analog clock” widget in UI (optional)
+  - [x] Add fallback to digital clock on unsupported browsers
 
 ### Feature: Time logging API and persistence
 - [ ] Implement API endpoint to create time log events (clock in/out, break in/out)
