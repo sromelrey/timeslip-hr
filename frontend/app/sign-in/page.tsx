@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useSignInForm } from '@/hooks/sign-in/use-sign-in-form';
 import { useAuth } from '@/hooks/auth';
 
@@ -9,18 +10,24 @@ export default function SignInPage() {
   const { formData, errors, isLoading, authError, handleChange, handleSubmit } =
     useSignInForm();
 
+  const { user } = useAuth();
+
   const onSubmit = async (e: React.FormEvent) => {
     const success = await handleSubmit(e);
-    if (success) {
-      // Get the user from the auth store to check role
-      const { user } = useAuth();
-      if (user?.role === 'EMPLOYEE') {
-        router.push('/home');
+    // Note: success indicates login was successful and store was updated.
+    // However, the 'user' state from useAuth() at the top level might not update 
+    // immediately in this closure. But the handleLogin in useAuth likely updates Redux.
+  };
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'ADMIN') {
+        router.push('/dashboard');
       } else {
-        router.push('/products');
+        router.push('/home');
       }
     }
-  };
+  }, [user, router]);
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>

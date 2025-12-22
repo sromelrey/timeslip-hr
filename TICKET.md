@@ -40,8 +40,8 @@
 ### Feature: Authorization and role-based access control
 - [x] Implement RBAC middleware/guards on backend
   - [x] Define permissions (e.g., view/edit timesheets, generate payslips, manage employees)
-- [/] Implement frontend route guards and UI gating
-  - [/] Hide admin-only actions from employee UI
+- [x] Implement frontend route guards and UI gating
+  - [x] Hide admin-only actions from employee UI
 
 ### Feature: Employee and admin account management (Admin-facing)
 - [x] Implement CRUD for employees (create, activate/deactivate, update details)
@@ -142,7 +142,7 @@
 ## Epic 6: Admin Dashboard and Reporting
 
 ### Feature: Admin overview dashboard
-- [ ] Build dashboard widgets (today’s attendance, currently clocked-in, on break)
+- [x] Build dashboard widgets (today’s attendance, currently clocked-in, on break)
 - [ ] Implement API endpoints to support dashboard queries
   - [ ] Optimize queries with indexes/caching where needed
 
