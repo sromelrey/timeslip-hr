@@ -24,12 +24,16 @@ export const getRefreshToken = (): string | null => {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 };
 
-export const setTokens = (accessToken: string, refreshToken: string): void => {
+export const setTokens = (accessToken: string, refreshToken: string, role?: string): void => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   // Set auth flag cookie for middleware
   document.cookie = 'auth=1; path=/';
+  // Set role cookie for role-based routing
+  if (role) {
+    document.cookie = `role=${role}; path=/`;
+  }
 };
 
 export const clearTokens = (): void => {
@@ -38,6 +42,8 @@ export const clearTokens = (): void => {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   // Clear auth flag cookie
   document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+  // Clear role cookie
+  document.cookie = 'role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
 };
 
 // Request interceptor - Add Bearer token

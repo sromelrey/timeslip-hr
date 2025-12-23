@@ -5,12 +5,8 @@ import { Employee } from './employee.entity';
 import { PayPeriod } from './pay-period.entity';
 import { User } from './user.entity';
 import { PayslipItem } from './payslip-item.entity';
+import { PayslipStatus } from '@/types/enums';
 
-export enum PayslipStatus {
-  DRAFT = 'DRAFT',
-  FINALIZED = 'FINALIZED',
-  VOID = 'VOID',
-}
 
 @Entity('payslips')
 @Index(['employeeId', 'payPeriodId'], { unique: true, where: 'deleted_at IS NULL' })

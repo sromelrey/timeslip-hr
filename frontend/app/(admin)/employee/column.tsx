@@ -109,7 +109,7 @@ export const columns: ColumnDef<Employee>[] = [
             <DropdownMenuItem>View details</DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                // @ts-ignore - meta is not typed in default Table definitions unless we extend it
+              // @ts-expect-error - meta is not typed in default Table definitions unless we extend it
                 const onEdit = table.options.meta?.onEdit;
                 if (onEdit) onEdit(employee);
               }}

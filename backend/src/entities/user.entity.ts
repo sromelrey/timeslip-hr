@@ -3,11 +3,8 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
 import { CommonEntity } from './common.entity';
 import { Company } from './company.entity';
 import { Employee } from './employee.entity';
+import { UserRole } from '@/types/enums';
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  EMPLOYEE = 'EMPLOYEE',
-}
 
 @Entity('users')
 @Index(['email'], { unique: true, where: 'deleted_at IS NULL' })

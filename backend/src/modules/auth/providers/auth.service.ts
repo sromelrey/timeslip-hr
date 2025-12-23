@@ -4,20 +4,12 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
-import { User, UserRole } from '@/entities/user.entity';
+import { User } from '@/entities/user.entity';
 import { Company } from '@/entities/company.entity';
+import { UserRole } from '@/types/enums';
+import { AuthPayload, Tokens } from '@/types/auth.types';
 import { RegisterDto } from '../dtos/register.dto';
 
-export interface TokenPayload {
-  sub: number;
-  email: string;
-  name: string;
-}
-
-export interface Tokens {
-  accessToken: string;
-  refreshToken: string;
-}
 
 @Injectable()
 export class AuthService {
@@ -51,7 +43,7 @@ export class AuthService {
   }
 
   async signTokens(user: User): Promise<Tokens> {
-    const payload: TokenPayload = {
+    const payload: AuthPayload = {
       sub: user.id,
       email: user.email,
       name: user.displayName,
@@ -77,7 +69,7 @@ export class AuthService {
 
   async refreshTokens(refreshToken: string): Promise<Tokens> {
     try {
-      const payload = await this.jwtService.verifyAsync<TokenPayload>(refreshToken, {
+      const payload = await this.jwtService.verifyAsync<AuthPayload>(refreshToken, {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       });
 

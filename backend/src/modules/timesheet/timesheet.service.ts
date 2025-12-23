@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Timesheet } from '../../entities/timesheet.entity';
 import { PayPeriod } from '../../entities/pay-period.entity';
 import { Employee } from '../../entities/employee.entity';
+import { TimesheetStatus } from '@/types/enums';
 
 @Injectable()
 export class TimesheetService {
@@ -57,7 +58,7 @@ export class TimesheetService {
         const newTimesheet = this.timesheetRepo.create({
           employeeId: employee.id,
           payPeriodId: payPeriod.id,
-          status: 'DRAFT' as any, // Use enum properly in real code
+          status: TimesheetStatus.DRAFT,
         });
         await this.timesheetRepo.save(newTimesheet);
         createdTimesheets.push(newTimesheet);

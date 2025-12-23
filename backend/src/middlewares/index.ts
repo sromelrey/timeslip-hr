@@ -2,7 +2,7 @@ import helmet from 'helmet';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-export function applyMiddlewares(app: INestApplication<any>) {
+export function applyMiddlewares(app: INestApplication) {
   const configService = app.get(ConfigService);
   
   // Security headers

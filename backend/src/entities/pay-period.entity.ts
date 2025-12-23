@@ -5,11 +5,8 @@ import { Company } from './company.entity';
 import { User } from './user.entity';
 import { Timesheet } from './timesheet.entity';
 import { Payslip } from './payslip.entity';
+import { PayPeriodStatus } from '@/types/enums';
 
-export enum PayPeriodStatus {
-  OPEN = 'OPEN',
-  CLOSED = 'CLOSED',
-}
 
 @Entity('pay_periods')
 @Index(['companyId', 'startDate', 'endDate'], { unique: true, where: 'deleted_at IS NULL' })

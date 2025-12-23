@@ -3,12 +3,8 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { CommonEntity } from './common.entity';
 import { Employee } from './employee.entity';
 import { User } from './user.entity';
+import { CompensationType } from '@/types/enums';
 
-export enum CompensationType {
-  HOURLY = 'HOURLY',
-  SALARIED = 'SALARIED',
-  DAILY = 'DAILY',
-}
 
 @Entity('employee_compensation')
 @Index(['employeeId', 'effectiveFrom'], { where: 'deleted_at IS NULL' })

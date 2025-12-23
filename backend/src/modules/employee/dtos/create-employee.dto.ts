@@ -1,6 +1,6 @@
 import { IsString, IsNumber, IsEnum, IsOptional, IsBoolean, IsDateString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { EmploymentType } from '@/entities/employee.entity';
+import { EmploymentType } from '@/types/enums';
 
 export class CreateEmployeeDto {
   @ApiProperty({ example: 1 })

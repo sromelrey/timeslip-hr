@@ -5,13 +5,8 @@ import { Employee } from './employee.entity';
 import { PayPeriod } from './pay-period.entity';
 import { User } from './user.entity';
 import { TimesheetDay } from './timesheet-day.entity';
+import { TimesheetStatus } from '@/types/enums';
 
-export enum TimesheetStatus {
-  DRAFT = 'DRAFT',
-  REVIEWED = 'REVIEWED',
-  APPROVED = 'APPROVED',
-  LOCKED = 'LOCKED',
-}
 
 @Entity('timesheets')
 @Index(['employeeId', 'payPeriodId'], { unique: true, where: 'deleted_at IS NULL' })

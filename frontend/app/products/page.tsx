@@ -4,6 +4,15 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/auth';
 import { useProductManagement, useProductForm } from '@/hooks/products';
 
+interface Product {
+  id: number;
+  name: string;
+  sku: string;
+  description?: string;
+  price: number;
+  stock: number;
+}
+
 export default function ProductsPage() {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -171,7 +180,7 @@ export default function ProductsPage() {
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
-                  {products.map((product: any) => (
+                  {(products as Product[]).map((product) => (
                     <tr key={product.id}>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='text-sm font-medium text-gray-900'>
