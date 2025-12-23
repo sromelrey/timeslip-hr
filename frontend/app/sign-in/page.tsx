@@ -13,10 +13,9 @@ export default function SignInPage() {
   const { user } = useAuth();
 
   const onSubmit = async (e: React.FormEvent) => {
-    const success = await handleSubmit(e);
-    // Note: success indicates login was successful and store was updated.
-    // However, the 'user' state from useAuth() at the top level might not update 
-    // immediately in this closure. But the handleLogin in useAuth likely updates Redux.
+    await handleSubmit(e);
+    // Note: handleSubmit updates the Redux store on success.
+    // The useEffect below will handle navigation when user state changes.
   };
 
   useEffect(() => {

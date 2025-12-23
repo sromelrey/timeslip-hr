@@ -2,12 +2,8 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { CommonEntity } from './common.entity';
 import { TimesheetDay } from './timesheet-day.entity';
+import { TimesheetAnomalySeverity } from '@/types/enums';
 
-export enum TimesheetAnomalySeverity {
-  INFO = 'INFO',
-  WARN = 'WARN',
-  ERROR = 'ERROR',
-}
 
 @Entity('timesheet_anomalies')
 @Index(['timesheetDayId', 'code'], { where: 'deleted_at IS NULL' })

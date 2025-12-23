@@ -7,12 +7,8 @@ import { EmployeeCompensation } from './employee-compensation.entity';
 import { TimeEvent } from './time-event.entity';
 import { Timesheet } from './timesheet.entity';
 import { Payslip } from './payslip.entity';
+import { EmploymentType } from '@/types/enums';
 
-export enum EmploymentType {
-  HOURLY = 'HOURLY',
-  SALARIED = 'SALARIED',
-  DAILY = 'DAILY',
-}
 
 @Entity('employees')
 @Index(['companyId', 'employeeNumber'], { unique: true, where: 'deleted_at IS NULL' })

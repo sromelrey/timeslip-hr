@@ -37,7 +37,7 @@ export interface UpdateEmployeeDto {
   lastName?: string;
   department?: string;
   position?: string;
-  employmentType?: 'HOURLY' | 'SALARIED';
+  employmentType?: EmploymentType;
   isActive?: boolean;
   hiredAt?: string;
   terminatedAt?: string;

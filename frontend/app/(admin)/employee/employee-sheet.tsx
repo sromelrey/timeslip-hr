@@ -138,6 +138,7 @@ export function EmployeeSheet({
                 <SelectContent>
                   <SelectItem value="SALARIED">Salaried</SelectItem>
                   <SelectItem value="HOURLY">Hourly</SelectItem>
+                  <SelectItem value="DAILY">Daily</SelectItem>
                 </SelectContent>
               </Select>
             </div>

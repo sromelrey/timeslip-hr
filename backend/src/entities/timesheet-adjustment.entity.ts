@@ -3,17 +3,8 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { CommonEntity } from './common.entity';
 import { TimesheetDay } from './timesheet-day.entity';
 import { User } from './user.entity';
+import { TimesheetAdjustmentField, TimesheetAdjustmentMode } from '@/types/enums';
 
-export enum TimesheetAdjustmentField {
-  REGULAR = 'REGULAR',
-  BREAK = 'BREAK',
-  OVERTIME = 'OVERTIME',
-}
-
-export enum TimesheetAdjustmentMode {
-  DELTA = 'DELTA',
-  OVERRIDE = 'OVERRIDE',
-}
 
 @Entity('timesheet_adjustments')
 @Index(['timesheetDayId', 'createdAt'], { where: 'deleted_at IS NULL' })

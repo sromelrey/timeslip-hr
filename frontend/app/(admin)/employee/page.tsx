@@ -8,8 +8,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
   type ColumnFiltersState,
   type SortingState,
   type VisibilityState,

@@ -2,11 +2,8 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { CommonEntity } from './common.entity';
 import { Payslip } from './payslip.entity';
+import { PayslipItemType } from '@/types/enums';
 
-export enum PayslipItemType {
-  EARNING = 'EARNING',
-  DEDUCTION = 'DEDUCTION',
-}
 
 @Entity('payslip_items')
 @Index(['payslipId', 'type'], { where: 'deleted_at IS NULL' })
