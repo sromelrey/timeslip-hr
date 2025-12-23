@@ -64,7 +64,7 @@ export function useEmployeeForm() {
       lastName: formData.lastName,
       department: formData.department || undefined,
       position: formData.position || undefined,
-      employmentType: formData.employmentType as any,
+      employmentType: formData.employmentType,
       isActive: formData.isActive,
       hiredAt: formData.hiredAt,
       rate: formData.rate ? parseFloat(formData.rate) : undefined,
