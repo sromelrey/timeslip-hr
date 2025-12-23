@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Employee } from '@/entities/employee.entity';
-import { EmployeeCompensation, CompensationType } from '@/entities/employee-compensation.entity';
+import { EmployeeCompensation } from '@/entities/employee-compensation.entity';
+import { CompensationType } from '@/types/enums';
 import { CreateEmployeeDto, UpdateEmployeeDto } from './dtos';
 
 @Injectable()

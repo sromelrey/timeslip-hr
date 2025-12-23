@@ -22,7 +22,7 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Welcome back, {user?.firstName || user?.name || 'Admin'}</h1>
-        <p className="text-muted-foreground">Here's what's happening with your team today.</p>
+        <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your team today.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

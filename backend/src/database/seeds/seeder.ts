@@ -2,10 +2,10 @@ import { DataSource } from 'typeorm';
 import * as argon2 from 'argon2';
 import * as dotenv from 'dotenv';
 import { Company } from '../../entities/company.entity';
-import { User, UserRole } from '../../entities/user.entity';
-import { Employee, EmploymentType } from '../../entities/employee.entity';
-import { PayPeriod, PayPeriodStatus } from '../../entities/pay-period.entity';
+import { User } from '../../entities/user.entity';
+import { Employee } from '../../entities/employee.entity';
 import { EmployeeCompensation } from '../../entities/employee-compensation.entity';
+import { UserRole, EmploymentType, CompensationType } from '../../types/enums';
 
 dotenv.config();
 
@@ -141,12 +141,9 @@ async function seed() {
       }
     }
 
-    // 4. Create PayPeriod
-    const payPeriodRepo = dataSource.getRepository(PayPeriod);
+    // 4. Create PayPeriod (logic placeholder)
     const compensationRepo = dataSource.getRepository(EmployeeCompensation);
-
-    const today = new Date();
-    // ... rest of payPeriod logic ...
+    
     
     // Add Compensation for John Doe if not exists
     if (employeeUser && employeeUser.employee) {
@@ -155,7 +152,7 @@ async function seed() {
             console.log('Creating initial compensation for John Doe');
             const comp = compensationRepo.create({
                 employee: employeeUser.employee,
-                type: 'DAILY' as any,
+                type: CompensationType.DAILY,
                 dailyRate: 200.00,
                 effectiveFrom: new Date().toISOString().split('T')[0],
             });

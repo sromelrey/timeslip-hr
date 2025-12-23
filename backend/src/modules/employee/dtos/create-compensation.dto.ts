@@ -1,6 +1,6 @@
 import { IsEnum, IsNumber, IsOptional, IsDateString, ValidateIf } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { CompensationType } from '@/entities/employee-compensation.entity';
+import { CompensationType } from '@/types/enums';
 
 export class CreateCompensationDto {
   @ApiProperty({ enum: CompensationType })

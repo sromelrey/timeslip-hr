@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './providers/auth.service';
-import { LoginDto, RefreshTokenDto, RegisterDto } from './dtos';
+import { RefreshTokenDto, RegisterDto } from './dtos';
 import { LocalAuthGuard } from '@/guards/local-auth.guard';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { User } from '@/entities/user.entity';
@@ -70,7 +70,7 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get current user profile' })
-  async getProfile(@Req() req: Express.Request & { user?: any }) {
+  async getProfile(@Req() req: Express.Request & { user?: User }) {
     if (!req.user) {
       return null;
     }

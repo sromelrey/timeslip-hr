@@ -13,6 +13,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   isActive: boolean;
+  role: string;
 }
 
 interface LoginResponse {
@@ -33,8 +34,8 @@ export const loginUser = createAsyncThunk(
       const response = await api.post<LoginResponse>('/auth/login', credentials);
       const { user, accessToken, refreshToken } = response.data;
       
-      // Store tokens in localStorage and set auth cookie
-      setTokens(accessToken, refreshToken);
+      // Store tokens in localStorage and set auth/role cookies
+      setTokens(accessToken, refreshToken, user.role);
       
       return { user, accessToken, refreshToken };
     } catch (error: any) {
