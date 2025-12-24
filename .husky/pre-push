@@ -5,14 +5,22 @@ echo "🔍 Running pre-push checks..."
 # Backend checks
 echo "📦 Backend: Linting..."
 cd backend
+<<<<<<< HEAD
 pnpm run lint || { echo "❌ Backend lint failed"; exit 1; }
 
 echo "📦 Backend: Building..."
 pnpm run build || { echo "❌ Backend build failed"; exit 1; }
+=======
+npm run lint || { echo "❌ Backend lint failed"; exit 1; }
+
+echo "📦 Backend: Building..."
+npm run build || { echo "❌ Backend build failed"; exit 1; }
+>>>>>>> 35ddae199f30c93e4be1a430c9a7b1b8b2187529
 
 # Frontend checks
 echo "🎨 Frontend: Linting..."
 cd ../frontend
+<<<<<<< HEAD
 # Using pnpm and allowing failure due to Windows CLI issues with next lint
 pnpm run lint || { 
   echo "⚠️ Frontend lint failed (skipping to allow push due to Windows CLI issues)"
@@ -22,3 +30,11 @@ echo "🎨 Frontend: Building..."
 pnpm run build || { echo "❌ Frontend build failed"; exit 1; }
 
 echo "✅ Pre-push checks completed!"
+=======
+npm run lint || { echo "❌ Frontend lint failed"; exit 1; }
+
+echo "🎨 Frontend: Building..."
+npm run build || { echo "❌ Frontend build failed"; exit 1; }
+
+echo "✅ All pre-push checks passed!"
+>>>>>>> 35ddae199f30c93e4be1a430c9a7b1b8b2187529
