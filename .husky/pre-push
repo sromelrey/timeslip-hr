@@ -13,10 +13,7 @@ pnpm run build || { echo "❌ Backend build failed"; exit 1; }
 # Frontend checks
 echo "🎨 Frontend: Linting..."
 cd ../frontend
-# Using pnpm and allowing failure due to Windows CLI issues with next lint
-pnpm run lint || { 
-  echo "⚠️ Frontend lint failed (skipping to allow push due to Windows CLI issues)"
-}
+pnpm run lint || { echo "❌ Frontend lint failed"; exit 1; }
 
 echo "🎨 Frontend: Building..."
 pnpm run build || { echo "❌ Frontend build failed"; exit 1; }
