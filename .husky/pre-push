@@ -5,17 +5,17 @@ echo "🔍 Running pre-push checks..."
 # Backend checks
 echo "📦 Backend: Linting..."
 cd backend
-npm run lint || { echo "❌ Backend lint failed"; exit 1; }
+pnpm run lint || { echo "❌ Backend lint failed"; exit 1; }
 
 echo "📦 Backend: Building..."
-npm run build || { echo "❌ Backend build failed"; exit 1; }
+pnpm run build || { echo "❌ Backend build failed"; exit 1; }
 
 # Frontend checks
 echo "🎨 Frontend: Linting..."
 cd ../frontend
-npm run lint || { echo "❌ Frontend lint failed"; exit 1; }
+pnpm run lint || { echo "❌ Frontend lint failed"; exit 1; }
 
 echo "🎨 Frontend: Building..."
-npm run build || { echo "❌ Frontend build failed"; exit 1; }
+pnpm run build || { echo "❌ Frontend build failed"; exit 1; }
 
-echo "✅ All pre-push checks passed!"
+echo "✅ Pre-push checks completed!"

@@ -1,29 +1,35 @@
 # Base stage
 FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 WORKDIR /app
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Development stage
 FROM base AS development
-RUN npm install
+RUN pnpm install
 COPY . .
 EXPOSE 3000
-CMD ["npm", "run", "start:dev"]
+CMD ["pnpm", "run", "start:dev"]
 
 # Build stage
 FROM base AS build
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Production stage
 FROM node:20-alpine AS production
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 WORKDIR /app
 ENV NODE_ENV=production
 
 # Copy package files and install production dependencies
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 # Copy built application
 COPY --from=build /app/dist ./dist

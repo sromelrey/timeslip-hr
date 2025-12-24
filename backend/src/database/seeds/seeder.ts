@@ -17,6 +17,12 @@ const dataSource = new DataSource({
   url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/timeslip_hr_db',
   entities: [__dirname + '/../../entities/*.entity.{ts,js}'], // Load all entities to satisfy relations
   synchronize: true, // Create tables if they don't exist
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 });
 
 async function seed() {
