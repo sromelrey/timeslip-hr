@@ -9,8 +9,10 @@ export function applyMiddlewares(app: INestApplication) {
   app.use(helmet());
   
   // CORS for frontend
+  const frontendUrls = configService.getOrThrow<string>('FRONTEND_URL').split(',');
+  
   app.enableCors({
-    origin: configService.getOrThrow<string>('FRONTEND_URL'),
+    origin: frontendUrls,
     credentials: true,
   });
 }

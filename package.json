@@ -4,12 +4,8 @@
   "version": "1.0.0",
   "description": "TimeSlip HR - Monorepo",
   "scripts": {
-    "lint:backend": "cd backend && pnpm run lint",
-    "lint:frontend": "cd frontend && pnpm run lint",
-    "build:backend": "cd backend && pnpm run build",
-    "build:frontend": "cd frontend && pnpm run build",
-    "lint": "pnpm run lint:backend && pnpm run lint:frontend",
-    "build": "pnpm run build:backend && pnpm run build:frontend",
+    "lint": "pnpm -r run lint",
+    "build": "pnpm -r run build",
     "prepare": "husky"
   },
   "devDependencies": {
