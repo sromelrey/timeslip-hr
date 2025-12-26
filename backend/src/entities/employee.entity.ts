@@ -42,6 +42,9 @@ export class Employee extends CommonEntity {
   @Column({ type: 'boolean', name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ name: 'pin_hash', type: 'varchar', length: 255, nullable: true })
+  pinHash?: string | null;
+
   @Column({ name: 'hired_at', type: 'date', nullable: true })
   hiredAt?: string | null;
 

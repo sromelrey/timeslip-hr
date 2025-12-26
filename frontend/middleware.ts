@@ -7,6 +7,9 @@ const protectedRoutes = ['/products', '/home', '/dashboard', '/employees', '/tim
 // Routes only for non-authenticated users
 const authRoutes = ['/sign-in'];
 
+// Public routes that don't require authentication
+const publicRoutes = ['/kiosk'];
+
 // Routes restricted to Admin role only
 const adminOnlyRoutes = ['/employees', '/payroll', '/settings'];
 
@@ -18,10 +21,13 @@ const roleDefaultRoutes: Record<string, string> = {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Check for auth and role cookies
   const isAuthenticated = request.cookies.has('auth');
   const userRole = request.cookies.get('role')?.value || 'EMPLOYEE';
+
+  // Allow public routes
+  if (publicRoutes.some((route) => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
 
   // Redirect authenticated users away from auth routes
   if (authRoutes.some((route) => pathname.startsWith(route))) {

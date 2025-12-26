@@ -14,6 +14,7 @@ interface User {
   lastName?: string;
   isActive: boolean;
   role: string;
+  employeeNumber?: number;
 }
 
 interface LoginResponse {

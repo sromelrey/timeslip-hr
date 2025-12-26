@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProductModule } from './modules/product/product.module';
 import { EmployeeModule } from './modules/employee/employee.module';
+import { TimeEventModule } from './modules/time-event/time-event.module';
 import { TimesheetModule } from './modules/timesheet/timesheet.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { TimesheetModule } from './modules/timesheet/timesheet.module';
     AuthModule,
     ProductModule,
     EmployeeModule,
+    TimeEventModule,
     TimesheetModule,
   ],
 })
