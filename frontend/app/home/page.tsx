@@ -1,56 +1,32 @@
 
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/auth";
 import AnalogClock from "@/components/AnalogClock";
-import TimeEntryForm, { TimeLog } from "@/components/TimeEntryForm";
+import TimeEntryForm from "@/components/TimeEntryForm";
 import RecentLogs from "@/components/RecentLogs";
 import { Separator } from "@/components/ui/separator";
 import { Clock, LogOut } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchServerTime, fetchRecentEvents, fetchEmployeeStatus } from "@/store/core/slices/time-event-slice";
+import { RootState } from "@/store";
 
-// Initial dummy data
-const initialLogs: TimeLog[] = [
-  {
-    id: "1",
-    employeeNo: "10042",
-    action: "Time In",
-    timestamp: new Date(Date.now() - 3600000 * 2),
-  },
-  {
-    id: "2",
-    employeeNo: "10015",
-    action: "Break Out",
-    timestamp: new Date(Date.now() - 3600000 * 3),
-  },
-  {
-    id: "3",
-    employeeNo: "10015",
-    action: "Break In",
-    timestamp: new Date(Date.now() - 3600000 * 4),
-  },
-  {
-    id: "4",
-    employeeNo: "10028",
-    action: "Time In",
-    timestamp: new Date(Date.now() - 3600000 * 5),
-  },
-  {
-    id: "5",
-    employeeNo: "10003",
-    action: "Time Out",
-    timestamp: new Date(Date.now() - 3600000 * 8),
-  },
-];
+// Initial dummy data (No longer used, using Redux)
 
 const Index = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { logout, user } = useAuth();
-  const [logs, setLogs] = useState<TimeLog[]>(initialLogs);
+  const { serverTime, recentEvents } = useAppSelector((state: RootState) => state.timeEvent);
 
-  const handleLogEntry = (log: TimeLog) => {
-    setLogs((prevLogs) => [log, ...prevLogs]);
-  };
+  useEffect(() => {
+    dispatch(fetchServerTime());
+    if (user?.employeeNumber) {
+      dispatch(fetchEmployeeStatus(user.employeeNumber.toString()));
+      dispatch(fetchRecentEvents(user.employeeNumber.toString()));
+    }
+  }, [dispatch, user]);
 
   const handleLogout = async () => {
     await logout();
@@ -96,7 +72,7 @@ const Index = () => {
           {/* Clock Section */}
           <section className="flex justify-center animate-fade-in">
             <div className="bg-card rounded-2xl border border-border p-8 shadow-card">
-              <AnalogClock />
+              <AnalogClock serverTime={serverTime || undefined} />
             </div>
           </section>
 
@@ -106,7 +82,7 @@ const Index = () => {
               <h2 className="text-lg font-semibold text-center text-foreground mb-6">
                 Record Your Time
               </h2>
-              <TimeEntryForm onLogEntry={handleLogEntry} />
+              <TimeEntryForm />
             </div>
           </section>
 
@@ -114,7 +90,7 @@ const Index = () => {
 
           {/* Recent Logs */}
           <section className="animate-slide-up" style={{ animationDelay: "200ms" }}>
-            <RecentLogs logs={logs} />
+            <RecentLogs events={recentEvents} />
           </section>
         </div>
       </main>

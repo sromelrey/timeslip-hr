@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
 
-const AnalogClock = () => {
+interface AnalogClockProps {
+  serverTime?: string;
+}
+
+const AnalogClock = ({ serverTime }: AnalogClockProps) => {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
+    if (serverTime) {
+      setTime(new Date(serverTime));
+    }
+  }, [serverTime]);
+
+  useEffect(() => {
     const timer = setInterval(() => {
-      setTime(new Date());
+      setTime(prevTime => new Date(prevTime.getTime() + 1000));
     }, 1000);
 
     return () => clearInterval(timer);

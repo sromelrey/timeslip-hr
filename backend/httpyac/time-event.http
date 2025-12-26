@@ -1,0 +1,69 @@
+### Time Event API Tests
+
+@baseUrl = http://localhost:3000/api
+
+### 1. Get Server Time
+GET {{baseUrl}}/time-events/server-time
+
+### 2. Get Employee Status (Initially CLOCKED_OUT)
+# Assuming employee 2025001 exists from previous setup
+GET {{baseUrl}}/time-events/status/2025001
+
+### 3. Clock In (Success)
+# Replace requestId with a unique UUID for each run
+POST {{baseUrl}}/time-events
+Content-Type: application/json
+
+{
+  "employeeNumber": "2025001",
+  "type": "CLOCK_IN",
+  "requestId": "{{$guid}}",
+  "source": "KIOSK"
+}
+
+### 4. Get Employee Status (Should be CLOCKED_IN)
+GET {{baseUrl}}/time-events/status/2025001
+
+### 5. Break In
+POST {{baseUrl}}/time-events
+Content-Type: application/json
+
+{
+  "employeeNumber": "2025001",
+  "type": "BREAK_IN",
+  "requestId": "{{$guid}}"
+}
+
+### 6. Break Out
+POST {{baseUrl}}/time-events
+Content-Type: application/json
+
+{
+  "employeeNumber": "2025001",
+  "type": "BREAK_OUT",
+  "requestId": "{{$guid}}"
+}
+
+### 7. Clock Out
+POST {{baseUrl}}/time-events
+Content-Type: application/json
+
+{
+  "employeeNumber": "2025001",
+  "type": "CLOCK_OUT",
+  "requestId": "{{$guid}}"
+}
+
+### 8. Invalid Transition (Test Error)
+# Trying to Clock Out when already Clocked Out
+POST {{baseUrl}}/time-events
+Content-Type: application/json
+
+{
+  "employeeNumber": "2025001",
+  "type": "CLOCK_OUT",
+  "requestId": "{{$guid}}"
+}
+
+### 9. Get Recent Events
+GET {{baseUrl}}/time-events/recent/2025001

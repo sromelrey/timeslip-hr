@@ -1,117 +1,140 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { submitTimeEvent, fetchEmployeeStatus, fetchRecentEvents, clearError } from "@/store/core/slices/time-event-slice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { LogIn, LogOut, Coffee, CoffeeIcon } from "lucide-react";
+import { LogIn, LogOut, Coffee, CoffeeIcon, AlertCircle } from "lucide-react";
+import { TimeEventType, TimeEventSource } from "@/lib/enums";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { RootState } from "@/store";
 
-export type TimeAction = "Time In" | "Time Out" | "Break In" | "Break Out";
-
-export interface TimeLog {
-  id: string;
-  employeeNo: string;
-  action: TimeAction;
-  timestamp: Date;
-}
-
-interface TimeEntryFormProps {
-  onLogEntry: (log: TimeLog) => void;
-}
-
-const TimeEntryForm = ({ onLogEntry }: TimeEntryFormProps) => {
+const TimeEntryForm = () => {
   const [employeeNo, setEmployeeNo] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pin, setPin] = useState("");
+  const dispatch = useAppDispatch();
+  const { currentStatus, loading, error } = useAppSelector((state: RootState) => state.timeEvent);
 
-  const validateEmployeeNo = (): boolean => {
+  useEffect(() => {
+    if (employeeNo.length >= 7) {
+      dispatch(fetchEmployeeStatus(employeeNo));
+      dispatch(fetchRecentEvents(employeeNo));
+    }
+  }, [employeeNo, dispatch]);
+
+  const handleAction = async (type: TimeEventType) => {
     if (!employeeNo.trim()) {
       toast({
-        title: "Validation Error",
+        title: "Error",
         description: "Please enter your Employee Number",
         variant: "destructive",
       });
-      return false;
+      return;
     }
-    
-    if (!/^\d+$/.test(employeeNo.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Employee Number must contain only numbers",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    return true;
-  };
 
-  const handleAction = async (action: TimeAction) => {
-    if (!validateEmployeeNo()) return;
-
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const timestamp = new Date();
-    const log: TimeLog = {
-      id: crypto.randomUUID(),
-      employeeNo: employeeNo.trim(),
-      action,
-      timestamp,
+    const payload = {
+      employeeNumber: employeeNo,
+      pin: pin,
+      type,
+      requestId: crypto.randomUUID(),
+      source: TimeEventSource.KIOSK,
     };
 
-    onLogEntry(log);
-
-    const timeString = timestamp.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    toast({
-      title: `${action} Recorded`,
-      description: `Employee #${employeeNo} - ${action} at ${timeString}`,
-    });
-
-    setIsSubmitting(false);
+    const resultAction = await dispatch(submitTimeEvent(payload));
+    
+    if (submitTimeEvent.fulfilled.match(resultAction)) {
+      setPin(""); // Clear PIN on success
+      toast({
+        title: "Success",
+        description: `${type.replace("_", " ")} recorded successfully.`,
+      });
+      // Refresh status and history
+      dispatch(fetchEmployeeStatus(employeeNo));
+      dispatch(fetchRecentEvents(employeeNo));
+    }
   };
 
-  const actionButtons: { action: TimeAction; icon: typeof LogIn; colorClass: string }[] = [
-    { action: "Time In", icon: LogIn, colorClass: "bg-time-in hover:bg-time-in/90 text-time-in-foreground" },
-    { action: "Time Out", icon: LogOut, colorClass: "bg-time-out hover:bg-time-out/90 text-time-out-foreground" },
-    { action: "Break In", icon: Coffee, colorClass: "bg-break-in hover:bg-break-in/90 text-break-in-foreground" },
-    { action: "Break Out", icon: CoffeeIcon, colorClass: "bg-break-out hover:bg-break-out/90 text-break-out-foreground" },
+  const isButtonEnabled = (type: TimeEventType) => {
+    if (!currentStatus) return type === TimeEventType.CLOCK_IN;
+    
+    switch (currentStatus) {
+      case 'CLOCKED_OUT':
+        return type === TimeEventType.CLOCK_IN;
+      case TimeEventType.CLOCK_IN:
+      case TimeEventType.BREAK_OUT:
+        return type === TimeEventType.CLOCK_OUT || type === TimeEventType.BREAK_IN;
+      case TimeEventType.BREAK_IN:
+        return type === TimeEventType.BREAK_OUT;
+      default:
+        return false;
+    }
+  };
+
+  const actionButtons = [
+    { type: TimeEventType.CLOCK_IN, label: "Clock In", icon: LogIn, colorClass: "bg-time-in hover:bg-time-in/90" },
+    { type: TimeEventType.CLOCK_OUT, label: "Clock Out", icon: LogOut, colorClass: "bg-time-out hover:bg-time-out/90" },
+    { type: TimeEventType.BREAK_IN, label: "Break In", icon: Coffee, colorClass: "bg-break-in hover:bg-break-in/90" },
+    { type: TimeEventType.BREAK_OUT, label: "Break Out", icon: CoffeeIcon, colorClass: "bg-break-out hover:bg-break-out/90" },
   ];
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="employeeNo" className="text-sm font-medium text-foreground">
-          Employee Number
-        </Label>
-        <Input
-          id="employeeNo"
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          placeholder="Enter your employee number"
-          value={employeeNo}
-          onChange={(e) => setEmployeeNo(e.target.value.replace(/\D/g, ""))}
-          className="h-12 text-lg font-mono text-center tracking-wider bg-card border-2 focus:border-primary transition-colors"
-          disabled={isSubmitting}
-        />
+    <div className="w-full space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="mt-2 h-auto p-0 underline"
+            onClick={() => dispatch(clearError())}
+          >
+            Dismiss
+          </Button>
+        </Alert>
+      )}
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="employeeNo">Employee Number</Label>
+          <Input
+            id="employeeNo"
+            type="text"
+            placeholder="Enter employee number"
+            value={employeeNo}
+            onChange={(e) => setEmployeeNo(e.target.value.replace(/\D/g, ""))}
+            className="h-14 text-xl font-mono text-center tracking-widest"
+            disabled={loading}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="pin">Security PIN</Label>
+          <Input
+            id="pin"
+            type="password"
+            placeholder="****"
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+            maxLength={6}
+            className="h-14 text-xl text-center tracking-widest"
+            disabled={loading}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
-        {actionButtons.map(({ action, icon: Icon, colorClass }) => (
+      <div className="grid grid-cols-2 gap-4">
+        {actionButtons.map(({ type, label, icon: Icon, colorClass }) => (
           <Button
-            key={action}
-            onClick={() => handleAction(action)}
-            disabled={isSubmitting}
-            className={`h-16 text-base font-semibold action-button shadow-soft ${colorClass}`}
+            key={type}
+            onClick={() => handleAction(type)}
+            disabled={loading || !isButtonEnabled(type)}
+            className={`h-20 text-lg font-bold flex flex-col gap-1 ${colorClass} text-white transition-all transform active:scale-95 disabled:opacity-30`}
           >
-            <Icon className="w-5 h-5 mr-2" />
-            {action}
+            <Icon className="w-6 h-6" />
+            {label}
           </Button>
         ))}
       </div>

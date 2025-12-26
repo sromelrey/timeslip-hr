@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as argon2 from 'argon2';
 import { Employee } from '@/entities/employee.entity';
 import { EmployeeCompensation } from '@/entities/employee-compensation.entity';
 import { CompensationType } from '@/types/enums';
@@ -85,5 +86,20 @@ export class EmployeeService {
   async remove(id: number): Promise<void> {
     const employee = await this.findOne(id);
     await this.employeeRepo.softRemove(employee);
+  }
+
+  async findByEmployeeNumber(employeeNumber: number): Promise<Employee | null> {
+    return this.employeeRepo.findOne({ where: { employeeNumber } });
+  }
+
+  async setPin(id: number, pin: string): Promise<void> {
+    const employee = await this.findOne(id);
+    employee.pinHash = await argon2.hash(pin);
+    await this.employeeRepo.save(employee);
+  }
+
+  async validatePin(employee: Employee, pin: string): Promise<boolean> {
+    if (!employee.pinHash) return false;
+    return argon2.verify(employee.pinHash, pin);
   }
 }

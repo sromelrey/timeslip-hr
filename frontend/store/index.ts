@@ -3,6 +3,7 @@ import authReducer from './global/slices/auth-slice';
 import productReducer from './core/slices/product-slice';
 import employeeReducer from './core/slices/employee-slice';
 import timesheetReducer from './core/slices/timesheet-slice';
+import timeEventReducer from './core/slices/time-event-slice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     product: productReducer,
     employee: employeeReducer,
     timesheet: timesheetReducer,
+    timeEvent: timeEventReducer,
   },
 });
 
