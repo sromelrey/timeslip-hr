@@ -1,7 +1,6 @@
 import { TimeEvent } from "@/lib/time-event.api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Clock } from "lucide-react";
 import { TimeEventType } from "@/lib/enums";
 
 interface RecentLogsProps {
@@ -38,6 +37,7 @@ const RecentLogs = ({ events = [] }: RecentLogsProps) => {
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead>Action</TableHead>
+                <TableHead>Employee</TableHead>
                 <TableHead className="text-right">Time</TableHead>
               </TableRow>
             </TableHeader>
@@ -48,6 +48,16 @@ const RecentLogs = ({ events = [] }: RecentLogsProps) => {
                     <Badge className={getActionBadgeClass(event.type)}>
                       {event.type.replace("_", " ")}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">
+                        {event.employee ? `${event.employee.firstName} ${event.employee.lastName}` : 'N/A'}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        #{event.employee?.employeeNumber || '---'}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm">
                     {new Date(event.happenedAt).toLocaleTimeString("en-US", {

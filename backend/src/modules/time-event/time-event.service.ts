@@ -29,15 +29,18 @@ export class TimeEventService {
         throw new BadRequestException('Employee account is inactive');
     }
 
-    // Validate PIN if provided or required
-    if (dto.pin) {
-      if (!employee.pinHash) {
-        throw new BadRequestException('Employee has no PIN set. Please contact admin.');
+    // Validate PIN if required or provided
+    if (employee.pinHash) {
+      if (!dto.pin) {
+        throw new BadRequestException('Security PIN is required');
       }
       const isPinValid = await argon2.verify(employee.pinHash, dto.pin);
       if (!isPinValid) {
         throw new BadRequestException('Invalid PIN');
       }
+    } else if (dto.pin) {
+      // If PIN is provided but not set for employee
+      throw new BadRequestException('Employee has no PIN set. Please contact admin.');
     }
 
     // Check for idempotency
@@ -112,6 +115,7 @@ export class TimeEventService {
 
     return this.timeEventRepo.find({
       where: { employeeId: employee.id },
+      relations: ['employee'],
       order: { happenedAt: 'DESC' },
       take: limit,
     });
