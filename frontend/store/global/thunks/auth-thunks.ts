@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import api, { setTokens, clearTokens, getRefreshToken } from '@/lib/api';
+import api, { setTokens, clearTokens, getRefreshToken, setRoleCookie } from '@/lib/api';
 
 interface LoginCredentials {
   email: string;
@@ -64,6 +64,13 @@ export const fetchCurrentUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get<{ user: User }>('/auth/me');
+      const { user } = response.data;
+      
+      // Ensure role cookie is synced for middleware
+      if (user.role) {
+        setRoleCookie(user.role);
+      }
+      
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user');

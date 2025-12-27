@@ -21,6 +21,11 @@ export interface TimeEvent {
   deviceId?: string;
   ipAddress?: string;
   metaJson?: string;
+  employee?: {
+    firstName: string;
+    lastName: string;
+    employeeNumber: string;
+  };
 }
 
 export const timeEventApi = {

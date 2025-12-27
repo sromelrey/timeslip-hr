@@ -1,16 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchServerTime, resetState } from "@/store/core/slices/time-event-slice";
 import AnalogClock from "@/components/AnalogClock";
 import TimeEntryForm from "@/components/TimeEntryForm";
 import RecentLogs from "@/components/RecentLogs";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/auth/use-auth";
 import { RootState } from "@/store";
 
 export default function KioskPage() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { logout } = useAuth();
   const { serverTime, currentStatus, recentEvents } = useAppSelector((state: RootState) => state.timeEvent);
 
   useEffect(() => {
@@ -31,9 +37,27 @@ export default function KioskPage() {
     return () => clearInterval(timer);
   }, [dispatch]);
 
+  const handleLogout = async () => {
+    await logout();
+    router.push("/sign-in");
+  };
+
   return (
-    <div className="space-y-12">
-      <header className="text-center space-y-4">
+    <div className="space-y-12 relative">
+      {/* Hidden Logout Nav */}
+      <div className="fixed top-0 left-0 w-full h-16 flex items-center justify-end px-6 opacity-0 hover:opacity-100 transition-opacity duration-300 z-50 bg-gradient-to-b from-background/80 to-transparent">
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          onClick={handleLogout}
+          className="shadow-lg"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Exit Kiosk
+        </Button>
+      </div>
+
+      <header className="text-center space-y-4 pt-4">
         <h1 className="text-4xl font-bold tracking-tight text-foreground">
           Employee Time Kiosk
         </h1>
@@ -59,14 +83,14 @@ export default function KioskPage() {
 
         <div className="space-y-8">
           <TimeEntryForm />
-          
-          <div className="pt-4 border-t border-border">
-            <h3 className="text-lg font-semibold mb-4 text-muted-foreground">
-              Recent Activity
-            </h3>
-            <RecentLogs events={recentEvents} />
-          </div>
         </div>
+      </div>
+
+      <div className="pt-8 border-t border-border">
+        <h3 className="text-lg font-semibold mb-4 text-muted-foreground">
+          Recent Activity
+        </h3>
+        <RecentLogs events={recentEvents} />
       </div>
 
       <footer className="text-center text-sm text-muted-foreground pt-8 border-t border-border/50">
