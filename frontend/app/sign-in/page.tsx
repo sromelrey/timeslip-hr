@@ -23,7 +23,7 @@ export default function SignInPage() {
       if (user.role === 'ADMIN') {
         router.push('/dashboard');
       } else {
-        router.push('/home');
+        router.push('/kiosk');
       }
     }
   }, [user, router]);

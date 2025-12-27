@@ -34,8 +34,21 @@ export function useAuth() {
           clearTokens();
           dispatch(clearAuth());
         });
+    } else if ((!storedAccessToken || !storedRefreshToken) && !isAuthenticated) {
+      // If no tokens in storage, strictly clear cookies to prevent middleware mismatch
+      // This handles the "Ghost Admin" case where cookies persist but LS is empty
+      clearTokens();
     }
   }, [dispatch, isAuthenticated]);
+
+  // Ensure cookies are always synced with user state
+  useEffect(() => {
+    if (isAuthenticated && user?.role && typeof window !== 'undefined') {
+      // Sync cookies to ensure middleware sees the same state as client
+      document.cookie = `timeslip_role=${user.role}; path=/; max-age=31536000`;
+      document.cookie = `timeslip_auth=1; path=/; max-age=31536000`;
+    }
+  }, [isAuthenticated, user?.role]);
 
   const login = useCallback(
     async (email: string, password: string) => {

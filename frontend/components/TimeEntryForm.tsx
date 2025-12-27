@@ -32,10 +32,18 @@ const TimeEntryForm = () => {
       });
       return;
     }
+    if (pin && pin.length < 4) {
+      toast({
+        title: "Error",
+        description: "PIN must be at least 4 characters",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const payload = {
       employeeNumber: employeeNo,
-      pin: pin,
+      pin: pin || undefined,
       type,
       requestId: crypto.randomUUID(),
       source: TimeEventSource.KIOSK,
@@ -89,7 +97,10 @@ const TimeEntryForm = () => {
             variant="ghost" 
             size="sm" 
             className="mt-2 h-auto p-0 underline"
-            onClick={() => dispatch(clearError())}
+            onClick={() => {
+              dispatch(clearError());
+              setEmployeeNo("");
+            }}
           >
             Dismiss
           </Button>

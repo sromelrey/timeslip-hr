@@ -24,15 +24,20 @@ export const getRefreshToken = (): string | null => {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 };
 
+export const setRoleCookie = (role: string): void => {
+  if (typeof window === 'undefined') return;
+  document.cookie = `timeslip_role=${role}; path=/; max-age=31536000`; // 1 year
+};
+
 export const setTokens = (accessToken: string, refreshToken: string, role?: string): void => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   // Set auth flag cookie for middleware
-  document.cookie = 'auth=1; path=/';
+  document.cookie = 'timeslip_auth=1; path=/';
   // Set role cookie for role-based routing
   if (role) {
-    document.cookie = `role=${role}; path=/`;
+    setRoleCookie(role);
   }
 };
 
@@ -41,9 +46,10 @@ export const clearTokens = (): void => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   // Clear auth flag cookie
-  document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+  document.cookie = 'timeslip_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
   // Clear role cookie
-  document.cookie = 'role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+  document.cookie = 'timeslip_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+  document.cookie = 'role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'; // Clear old cookie
 };
 
 // Request interceptor - Add Bearer token

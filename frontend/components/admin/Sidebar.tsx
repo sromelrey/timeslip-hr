@@ -13,8 +13,9 @@ import {
   LogOut,
   ChevronLeft,
   Menu,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -34,6 +35,12 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Reset navigation state when pathname changes
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     await logout();
@@ -94,23 +101,36 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           <nav className="flex-1 overflow-y-auto py-4 space-y-2 px-3">
             {navItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/home" && pathname.startsWith(item.href));
+              const isDisabled = isNavigating && !isActive;
+              
               return (
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={(e) => {
+                    if (isActive) {
+                      e.preventDefault();
+                    } else {
+                      setIsNavigating(true);
+                    }
+                  }}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    isDisabled && "opacity-50 pointer-events-none"
                   )}
                   title={isCollapsed ? item.name : ""}
                 >
                   <item.icon className="w-5 h-5 shrink-0" />
                   {!isCollapsed && (
-                    <span className="font-medium text-sm whitespace-nowrap">
+                    <span className="font-medium text-sm whitespace-nowrap flex-1">
                       {item.name}
                     </span>
+                  )}
+                  {isNavigating && isActive && (
+                    <Loader2 className="w-4 h-4 animate-spin ml-auto" />
                   )}
                   {isCollapsed && (
                     <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-md">
@@ -128,7 +148,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               onClick={handleLogout}
               className={cn(
                 "flex items-center gap-3 w-full px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors group relative",
-                isCollapsed && "justify-center"
+                isCollapsed && "justify-center",
+                isNavigating && "opacity-50 pointer-events-none"
               )}
               title={isCollapsed ? "Logout" : ""}
             >

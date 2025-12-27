@@ -18,9 +18,14 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      console.log('[AdminLayout] Not authenticated, redirecting to /sign-in');
       router.push("/sign-in");
     } else if (!isLoading && user && user.role !== "ADMIN") {
-      router.push("/home");
+      console.log('[AdminLayout] User is not ADMIN, redirecting to /kiosk', { 
+        role: user.role, 
+        user 
+      });
+      router.push("/kiosk");
     }
   }, [isLoading, isAuthenticated, user, router]);
 
