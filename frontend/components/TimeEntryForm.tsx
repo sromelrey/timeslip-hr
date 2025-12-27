@@ -32,7 +32,6 @@ const TimeEntryForm = () => {
       });
       return;
     }
-
     if (pin && pin.length < 4) {
       toast({
         title: "Error",

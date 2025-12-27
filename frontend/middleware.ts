@@ -37,6 +37,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public routes
+  if (publicRoutes.some((route) => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
   // Redirect authenticated users away from auth routes
   if (authRoutes.some((route) => pathname.startsWith(route))) {
     if (isAuthenticated) {
