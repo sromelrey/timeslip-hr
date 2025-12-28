@@ -108,3 +108,16 @@ export const generateTimesheets = createAsyncThunk(
     }
   }
 );
+
+export const populateTimesheetDays = createAsyncThunk(
+  'timesheet/populateTimesheetDays',
+  async (timesheetId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.post<TimesheetDay[]>(`/timesheets/${timesheetId}/populate`);
+      return { timesheetId, days: response.data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to populate timesheet days');
+    }
+  }
+);
+

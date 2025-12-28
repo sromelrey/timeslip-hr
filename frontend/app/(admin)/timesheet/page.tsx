@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { ChevronDown, Plus } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, useMemo, useCallback } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -31,12 +31,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { toast } from "@/hooks/use-toast"
 
 import { useTimesheetManagement } from "@/hooks/timesheets"
-import { columns } from "./column"
+import { createColumns } from "./column"
+import { TimesheetStatus } from "@/store/core/thunks/timesheet-thunks"
 
 export default function TimesheetPage() {
-  const { timesheets, isLoading, loadTimesheets, generateTimesheets } = useTimesheetManagement()
+  const { timesheets, isLoading, loadTimesheets, generateTimesheets, updateStatus, populateDays } = useTimesheetManagement()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -46,6 +48,33 @@ export default function TimesheetPage() {
   useEffect(() => {
     loadTimesheets()
   }, [loadTimesheets])
+
+  const handleStatusUpdate = useCallback(async (id: number, status: TimesheetStatus) => {
+    try {
+      await updateStatus(id, status)
+      toast({ title: "Success", description: `Timesheet status updated to ${status}` })
+      loadTimesheets()
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Failed to update status"
+      toast({ title: "Error", description: message, variant: "destructive" })
+    }
+  }, [updateStatus, loadTimesheets])
+
+  const handlePopulate = useCallback(async (id: number) => {
+    try {
+      await populateDays(id)
+      toast({ title: "Success", description: "Timesheet days populated from time events" })
+      loadTimesheets()
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Failed to populate days"
+      toast({ title: "Error", description: message, variant: "destructive" })
+    }
+  }, [populateDays, loadTimesheets])
+
+  const columns = useMemo(() => createColumns({
+    onStatusUpdate: handleStatusUpdate,
+    onPopulate: handlePopulate,
+  }), [handleStatusUpdate, handlePopulate])
 
   const table = useReactTable({
     data: timesheets,
