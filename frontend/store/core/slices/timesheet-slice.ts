@@ -5,6 +5,7 @@ import {
   generateTimesheets,
   updateTimesheetEntry,
   updateTimesheetStatus,
+  populateTimesheetDays,
   Timesheet,
 } from '../thunks/timesheet-thunks';
 
@@ -103,6 +104,21 @@ const timesheetSlice = createSlice({
           if (index !== -1) {
               state.timesheets[index] = action.payload;
           }
+      })
+      // Populate Days
+      .addCase(populateTimesheetDays.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+      })
+      .addCase(populateTimesheetDays.fulfilled, (state, action) => {
+          state.loading = false;
+          if (state.selectedTimesheet?.id === action.payload.timesheetId) {
+              state.selectedTimesheet.days = action.payload.days;
+          }
+      })
+      .addCase(populateTimesheetDays.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.payload as string;
       });
   },
 });

@@ -58,6 +58,14 @@ export function useTimesheetManagement() {
      [dispatch]
   );
 
+  const handlePopulateDays = useCallback(
+    async (timesheetId: number) => {
+      const { populateTimesheetDays } = await import('@/store/core/thunks/timesheet-thunks');
+      return dispatch(populateTimesheetDays(timesheetId)).unwrap();
+    },
+    [dispatch]
+  );
+
   const handleClearError = useCallback(() => {
     dispatch(clearError());
   }, [dispatch]);
@@ -76,8 +84,10 @@ export function useTimesheetManagement() {
     generateTimesheets: handleGenerateTimesheets,
     updateEntry: handleUpdateEntry,
     updateStatus: handleUpdateStatus,
+    populateDays: handlePopulateDays,
     clearError: handleClearError,
     clearSelectedTimesheet: handleClearSelected,
     TimesheetStatus,
   };
 }
+
