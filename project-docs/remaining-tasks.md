@@ -3,9 +3,9 @@
 Based on the current project state and `TICKET.md`.
 
 ## 1. Employee Time Logging (Epic 3)
-- [ ] **Employee Kiosk UI**: Build the interface for employees to clock in/out using their employee number/PIN.
-- [ ] **Time Event API**: Verify/Implement logical validation for clock-in/out sequences (e.g., prevent double clock-in).
-- [ ] **State Persistence**: Ensure server-side state (Clocked In vs. Clocked Out) is robust.
+- [x] **Employee Kiosk UI**: Build the interface for employees to clock in/out using their employee number/PIN.
+- [x] **Time Event API**: Verify/Implement logical validation for clock-in/out sequences (e.g., prevent double clock-in).
+- [x] **State Persistence**: Ensure server-side state (Clocked In vs. Clocked Out) is robust.
 
 ## 2. Timesheet Management (Epic 4)
 - [ ] **Automated Generation**: Implement service to aggregate `TimeEvents` into daily `Timesheets`.

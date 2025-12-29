@@ -1,0 +1,48 @@
+### Admin Login (establish session cookie)
+# @name adminLogin
+POST {{API_BASE_URL}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{TEST_EMPLOYEE}}",
+  "password": "{{TEST_USER_PASSWORD}}"
+}
+
+### List all timesheets
+GET {{API_BASE_URL}}/timesheets
+Authorization: Bearer {{adminLogin.accessToken}}
+
+### Generate timesheets for Pay Period 1
+POST {{API_BASE_URL}}/timesheets/generate
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "payPeriodId": 1
+}
+
+### Get specific timesheet (replace :id with actual ID)
+GET {{API_BASE_URL}}/timesheets/1
+Authorization: Bearer {{adminLogin.accessToken}}
+
+### Populate timesheet days (aggregate time events)
+POST {{API_BASE_URL}}/timesheets/1/populate
+Authorization: Bearer {{adminLogin.accessToken}}
+
+### Update timesheet status to REVIEWED
+PATCH {{API_BASE_URL}}/timesheets/1/status
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "status": "REVIEWED"
+}
+
+### Update timesheet status to APPROVED
+PATCH {{API_BASE_URL}}/timesheets/1/status
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "status": "APPROVED"
+}
