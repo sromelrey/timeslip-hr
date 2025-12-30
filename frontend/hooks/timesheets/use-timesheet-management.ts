@@ -1,23 +1,22 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store';
 import {
   fetchTimesheets,
   fetchTimesheetById,
   generateTimesheets,
+  fetchRawEvents,
+  createAdjustment as createAdjustmentThunk,
   TimesheetStatus,
+  CreateAdjustmentDto,
 } from '@/store/core/thunks/timesheet-thunks';
 import { clearError, clearSelectedTimesheet } from '@/store/core/slices/timesheet-slice';
 
 export function useTimesheetManagement() {
   const dispatch = useDispatch<AppDispatch>();
-  const { timesheets, selectedTimesheet, loading, error } = useSelector(
+  const { timesheets, selectedTimesheet, rawEvents, loading, error } = useSelector(
     (state: RootState) => state.timesheet
   );
-
-  // Initial fetch could be optional depending on page, but we'll expose a refetch
-  // We won't auto-fetch here to avoid unnecessary calls if this hook is used in multiple places
-  // The page component should trigger the first fetch if needed.
 
   const loadTimesheets = useCallback(() => {
     dispatch(fetchTimesheets());
@@ -26,6 +25,13 @@ export function useTimesheetManagement() {
   const loadTimesheetById = useCallback(
     (id: number) => {
       dispatch(fetchTimesheetById(id));
+    },
+    [dispatch]
+  );
+
+  const loadRawEvents = useCallback(
+    (timesheetId: number) => {
+      dispatch(fetchRawEvents(timesheetId));
     },
     [dispatch]
   );
@@ -39,11 +45,6 @@ export function useTimesheetManagement() {
 
   const handleUpdateEntry = useCallback(
     async (timesheetId: number, entryId: number, data: any) => {
-      // Need to import updateTimesheetEntry here or at top. 
-      // Ideally move all imports to top but for this replace tool we assume they are available or we add them.
-      // Wait, I need to add them to top imports first if not already there.
-      // Since I can't do two non-contiguous edits easily without multi_replace, I will assume I need to import them.
-      // Actually I will use dispatch directly with the imported thunk.
       const { updateTimesheetEntry } = await import('@/store/core/thunks/timesheet-thunks');
       return dispatch(updateTimesheetEntry({ timesheetId, entryId, data })).unwrap();
     },
@@ -66,6 +67,13 @@ export function useTimesheetManagement() {
     [dispatch]
   );
 
+  const handleCreateAdjustment = useCallback(
+    async (dayId: number, dto: CreateAdjustmentDto) => {
+      return dispatch(createAdjustmentThunk({ dayId, dto })).unwrap();
+    },
+    [dispatch]
+  );
+
   const handleClearError = useCallback(() => {
     dispatch(clearError());
   }, [dispatch]);
@@ -77,17 +85,19 @@ export function useTimesheetManagement() {
   return {
     timesheets,
     selectedTimesheet,
+    rawEvents,
     isLoading: loading,
     error,
     loadTimesheets,
     loadTimesheetById,
+    loadRawEvents,
     generateTimesheets: handleGenerateTimesheets,
     updateEntry: handleUpdateEntry,
     updateStatus: handleUpdateStatus,
     populateDays: handlePopulateDays,
+    createAdjustment: handleCreateAdjustment,
     clearError: handleClearError,
     clearSelectedTimesheet: handleClearSelected,
     TimesheetStatus,
   };
 }
-

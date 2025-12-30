@@ -5,6 +5,7 @@ export interface AuthPayload {
   email: string;
   name: string;
   role: UserRole;
+  companyId: number;
 }
 
 export interface Tokens {

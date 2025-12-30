@@ -33,9 +33,33 @@ export interface TimesheetDay {
   anomaliesJson: string | null;
 }
 
+export type TimesheetAdjustmentField = 'REGULAR' | 'BREAK' | 'OVERTIME';
+export type TimesheetAdjustmentMode = 'DELTA' | 'OVERRIDE';
+
+export interface CreateAdjustmentDto {
+  field: TimesheetAdjustmentField;
+  mode: TimesheetAdjustmentMode;
+  deltaMinutes?: number;
+  overrideMinutes?: number;
+  reason: string;
+}
+
+export interface PayPeriod {
+  id: number;
+  companyId: number;
+  startDate: string;
+  endDate: string;
+  status: 'OPEN' | 'CLOSED';
+}
+
 export const timesheetApi = {
   getAll: async (): Promise<Timesheet[]> => {
     const response = await api.get('/timesheets');
+    return response.data;
+  },
+
+  getPayPeriods: async (): Promise<PayPeriod[]> => {
+    const response = await api.get('/timesheets/pay-periods');
     return response.data;
   },
 

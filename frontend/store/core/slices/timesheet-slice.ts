@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import {
   fetchTimesheets,
   fetchTimesheetById,
@@ -6,12 +6,15 @@ import {
   updateTimesheetEntry,
   updateTimesheetStatus,
   populateTimesheetDays,
+  fetchRawEvents,
   Timesheet,
+  TimeEvent,
 } from '../thunks/timesheet-thunks';
 
 interface TimesheetState {
   timesheets: Timesheet[];
   selectedTimesheet: Timesheet | null;
+  rawEvents: TimeEvent[];
   loading: boolean;
   error: string | null;
 }
@@ -19,6 +22,7 @@ interface TimesheetState {
 const initialState: TimesheetState = {
   timesheets: [],
   selectedTimesheet: null,
+  rawEvents: [],
   loading: false,
   error: null,
 };
@@ -71,17 +75,8 @@ const timesheetSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(generateTimesheets.fulfilled, (state, action) => {
+      .addCase(generateTimesheets.fulfilled, (state) => {
         state.loading = false;
-        // Optionally append new timesheets or just refetch. 
-        // For simplicity, we might just assume the user will refetch or we update the list if it returns new ones.
-        // The generate endpoint returns the list of created timesheets (or all relevant ones if we changed logic).
-        // Let's assume it returns newly created ones. We should probably merge them or just re-fetch.
-        // For now, let's just push them if they are unique, or safer: just do nothing and let component refetch.
-        // But better UX:
-        // state.timesheets = [...state.timesheets, ...action.payload]; 
-        // But need to handle duplicates.
-        // Let's just leave it for now.
       })
       .addCase(generateTimesheets.rejected, (state, action) => {
         state.loading = false;
@@ -89,9 +84,7 @@ const timesheetSlice = createSlice({
       })
       // Update Entry
       .addCase(updateTimesheetEntry.fulfilled, (state, action) => {
-          // Update the selected timesheet with the new data (assuming backend returns the full timesheet)
           state.selectedTimesheet = action.payload;
-          // Also update it in the list if present
           const index = state.timesheets.findIndex(t => t.id === action.payload.id);
           if (index !== -1) {
               state.timesheets[index] = action.payload;
@@ -119,6 +112,10 @@ const timesheetSlice = createSlice({
       .addCase(populateTimesheetDays.rejected, (state, action) => {
           state.loading = false;
           state.error = action.payload as string;
+      })
+      // Fetch Raw Events
+      .addCase(fetchRawEvents.fulfilled, (state, action) => {
+          state.rawEvents = action.payload;
       });
   },
 });
