@@ -8,9 +8,9 @@ Based on the current project state and `TICKET.md`.
 - [x] **State Persistence**: Ensure server-side state (Clocked In vs. Clocked Out) is robust.
 
 ## 2. Timesheet Management (Epic 4)
-- [ ] **Automated Generation**: Implement service to aggregate `TimeEvents` into daily `Timesheets`.
-- [ ] **Admin Review UI**: Interface for admins to view, approve, or correct timesheets.
-- [ ] **Adjustment Workflow**: API and UI for manual time adjustments.
+- [x] **Automated Generation**: Implement service to aggregate `TimeEvents` into daily `Timesheets`.
+- [x] **Admin Review UI**: Interface for admins to view, approve, or correct timesheets.
+- [x] **Adjustment Workflow**: API and UI for manual time adjustments.
 
 ## 3. Payroll & Payslips (Epic 5)
 - [ ] **Payroll Calculation Engine**: Logic to compute gross pay (Hours * Rate) + deductibles.

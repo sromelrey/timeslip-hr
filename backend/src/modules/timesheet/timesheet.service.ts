@@ -3,10 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { Timesheet } from '../../entities/timesheet.entity';
 import { TimesheetDay } from '../../entities/timesheet-day.entity';
+import { TimesheetAdjustment } from '../../entities/timesheet-adjustment.entity';
 import { PayPeriod } from '../../entities/pay-period.entity';
 import { Employee } from '../../entities/employee.entity';
 import { TimeEvent } from '../../entities/time-event.entity';
-import { TimesheetStatus, TimeEventType } from '@/types/enums';
+import { TimesheetStatus, TimeEventType, TimesheetAdjustmentField, TimesheetAdjustmentMode } from '@/types/enums';
+import { CreateAdjustmentDto } from './dtos/create-adjustment.dto';
 
 @Injectable()
 export class TimesheetService {
@@ -15,6 +17,8 @@ export class TimesheetService {
     private readonly timesheetRepo: Repository<Timesheet>,
     @InjectRepository(TimesheetDay)
     private readonly timesheetDayRepo: Repository<TimesheetDay>,
+    @InjectRepository(TimesheetAdjustment)
+    private readonly adjustmentRepo: Repository<TimesheetAdjustment>,
     @InjectRepository(PayPeriod)
     private readonly payPeriodRepo: Repository<PayPeriod>,
     @InjectRepository(Employee)
@@ -28,6 +32,13 @@ export class TimesheetService {
       where: { payPeriod: { companyId } },
       relations: ['employee', 'payPeriod'],
       order: { payPeriod: { startDate: 'DESC' }, employee: { lastName: 'ASC' } },
+    });
+  }
+
+  async getPayPeriods(companyId: number): Promise<PayPeriod[]> {
+    return this.payPeriodRepo.find({
+      where: { companyId },
+      order: { startDate: 'DESC' },
     });
   }
 
@@ -220,6 +231,100 @@ export class TimesheetService {
     timesheet.status = newStatus;
 
     return this.timesheetRepo.save(timesheet);
+  }
+
+  /**
+   * Create a manual adjustment for a timesheet day.
+   */
+  async createAdjustment(
+    dayId: number,
+    dto: CreateAdjustmentDto,
+    userId: number,
+    companyId: number,
+  ): Promise<TimesheetAdjustment> {
+    // Find the day and verify ownership via timesheet -> pay period -> company
+    const day = await this.timesheetDayRepo.findOne({
+      where: { id: dayId },
+      relations: ['timesheet', 'timesheet.payPeriod'],
+    });
+    if (!day || !day.timesheet?.payPeriod || day.timesheet.payPeriod.companyId !== companyId) {
+      throw new NotFoundException(`Timesheet day #${dayId} not found`);
+    }
+
+    // Prevent adjustments on locked timesheets
+    if (day.timesheet.status === TimesheetStatus.LOCKED) {
+      throw new BadRequestException('Cannot adjust a locked timesheet');
+    }
+
+    // Create the adjustment record
+    const adjustment = this.adjustmentRepo.create({
+      timesheetDayId: dayId,
+      field: dto.field,
+      mode: dto.mode,
+      deltaMinutes: dto.mode === TimesheetAdjustmentMode.DELTA ? dto.deltaMinutes : null,
+      overrideMinutes: dto.mode === TimesheetAdjustmentMode.OVERRIDE ? dto.overrideMinutes : null,
+      reason: dto.reason,
+      createdByUserId: userId,
+    });
+    await this.adjustmentRepo.save(adjustment);
+
+    // Apply adjustment to the day's values
+    const fieldMap: Record<TimesheetAdjustmentField, keyof Pick<TimesheetDay, 'regularMinutes' | 'breakMinutes' | 'overtimeMinutes'>> = {
+      [TimesheetAdjustmentField.REGULAR]: 'regularMinutes',
+      [TimesheetAdjustmentField.BREAK]: 'breakMinutes',
+      [TimesheetAdjustmentField.OVERTIME]: 'overtimeMinutes',
+    };
+    const targetField = fieldMap[dto.field];
+
+    if (dto.mode === TimesheetAdjustmentMode.DELTA) {
+      day[targetField] = Math.max(0, day[targetField] + (dto.deltaMinutes ?? 0));
+    } else {
+      day[targetField] = dto.overrideMinutes ?? 0;
+    }
+    await this.timesheetDayRepo.save(day);
+
+    return adjustment;
+  }
+
+  /**
+   * Get adjustment history for a specific day.
+   */
+  async getAdjustmentsForDay(dayId: number, companyId: number): Promise<TimesheetAdjustment[]> {
+    const day = await this.timesheetDayRepo.findOne({
+      where: { id: dayId },
+      relations: ['timesheet', 'timesheet.payPeriod'],
+    });
+    if (!day || day.timesheet.payPeriod.companyId !== companyId) {
+      throw new NotFoundException(`Timesheet day #${dayId} not found`);
+    }
+
+    return this.adjustmentRepo.find({
+      where: { timesheetDayId: dayId },
+      relations: ['createdByUser'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  /**
+   * Get raw time events for a timesheet (for side-by-side comparison).
+   */
+  async getRawEventsForTimesheet(timesheetId: number, companyId: number): Promise<TimeEvent[]> {
+    const timesheet = await this.timesheetRepo.findOne({
+      where: { id: timesheetId, payPeriod: { companyId } },
+      relations: ['payPeriod'],
+    });
+    if (!timesheet) {
+      throw new NotFoundException(`Timesheet #${timesheetId} not found`);
+    }
+
+    const { startDate, endDate } = timesheet.payPeriod;
+    return this.timeEventRepo.find({
+      where: {
+        employeeId: timesheet.employeeId,
+        happenedAt: Between(new Date(startDate), new Date(new Date(endDate).getTime() + 86400000)),
+      },
+      order: { happenedAt: 'ASC' },
+    });
   }
 }
 
