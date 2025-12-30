@@ -46,3 +46,35 @@ Content-Type: application/json
 {
   "status": "APPROVED"
 }
+
+### Get raw time events for a timesheet
+GET {{API_BASE_URL}}/timesheets/1/events
+Authorization: Bearer {{adminLogin.accessToken}}
+
+### Create adjustment for a timesheet day (add 30 mins regular time)
+POST {{API_BASE_URL}}/timesheets/days/1/adjustments
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "field": "REGULAR",
+  "mode": "DELTA",
+  "deltaMinutes": 30,
+  "reason": "Employee worked during lunch, adding 30 minutes to compensate."
+}
+
+### Create adjustment for a timesheet day (override break time)
+POST {{API_BASE_URL}}/timesheets/days/1/adjustments
+Authorization: Bearer {{adminLogin.accessToken}}
+Content-Type: application/json
+
+{
+  "field": "BREAK",
+  "mode": "OVERRIDE",
+  "overrideMinutes": 60,
+  "reason": "Correcting break time to reflect actual 1 hour break taken."
+}
+
+### Get adjustment history for a timesheet day
+GET {{API_BASE_URL}}/timesheets/days/1/adjustments
+Authorization: Bearer {{adminLogin.accessToken}}

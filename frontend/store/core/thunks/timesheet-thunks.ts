@@ -121,3 +121,75 @@ export const populateTimesheetDays = createAsyncThunk(
   }
 );
 
+// Adjustment types
+export type AdjustmentField = 'REGULAR' | 'BREAK' | 'OVERTIME';
+export type AdjustmentMode = 'DELTA' | 'OVERRIDE';
+
+export interface TimesheetAdjustment {
+  id: number;
+  timesheetDayId: number;
+  field: AdjustmentField;
+  mode: AdjustmentMode;
+  deltaMinutes: number | null;
+  overrideMinutes: number | null;
+  reason: string;
+  createdByUserId: number;
+  createdByUser?: { id: number; name: string };
+  createdAt: string;
+}
+
+export interface CreateAdjustmentDto {
+  field: AdjustmentField;
+  mode: AdjustmentMode;
+  deltaMinutes?: number;
+  overrideMinutes?: number;
+  reason: string;
+}
+
+export interface TimeEvent {
+  id: number;
+  employeeId: number;
+  type: 'CLOCK_IN' | 'CLOCK_OUT' | 'BREAK_IN' | 'BREAK_OUT';
+  happenedAt: string;
+  source: 'KIOSK' | 'WEB' | 'MOBILE';
+}
+
+// Fetch raw time events for a timesheet
+export const fetchRawEvents = createAsyncThunk(
+  'timesheet/fetchRawEvents',
+  async (timesheetId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.get<TimeEvent[]>(`/timesheets/${timesheetId}/events`);
+      return { timesheetId, events: response.data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch raw events');
+    }
+  }
+);
+
+// Fetch adjustments for a day
+export const fetchAdjustments = createAsyncThunk(
+  'timesheet/fetchAdjustments',
+  async (dayId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.get<TimesheetAdjustment[]>(`/timesheets/days/${dayId}/adjustments`);
+      return { dayId, adjustments: response.data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch adjustments');
+    }
+  }
+);
+
+// Create a new adjustment
+export const createAdjustment = createAsyncThunk(
+  'timesheet/createAdjustment',
+  async ({ dayId, dto }: { dayId: number; dto: CreateAdjustmentDto }, { rejectWithValue }) => {
+    try {
+      const response = await api.post<TimesheetAdjustment>(`/timesheets/days/${dayId}/adjustments`, dto);
+      return { dayId, adjustment: response.data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create adjustment');
+    }
+  }
+);
+

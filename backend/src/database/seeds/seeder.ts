@@ -4,6 +4,7 @@ import { UserSeeder } from './user.seeder';
 import { EmployeeSeeder } from './employee.seeder';
 import { PayPeriodSeeder } from './pay-period.seeder';
 import { CompensationSeeder } from './compensation.seeder';
+import { TimeEventSeeder } from './time-event.seeder';
 
 /**
  * List of seeders to run in order.
@@ -15,6 +16,7 @@ const seeders: Seeder[] = [
   EmployeeSeeder,
   PayPeriodSeeder,
   CompensationSeeder,
+  TimeEventSeeder,
 ];
 
 async function runSeeders() {
