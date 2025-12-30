@@ -33,6 +33,17 @@ export interface TimesheetDay {
   anomaliesJson: string | null;
 }
 
+export type TimesheetAdjustmentField = 'REGULAR' | 'BREAK' | 'OVERTIME';
+export type TimesheetAdjustmentMode = 'DELTA' | 'OVERRIDE';
+
+export interface CreateAdjustmentDto {
+  field: TimesheetAdjustmentField;
+  mode: TimesheetAdjustmentMode;
+  deltaMinutes?: number;
+  overrideMinutes?: number;
+  reason: string;
+}
+
 export const timesheetApi = {
   getAll: async (): Promise<Timesheet[]> => {
     const response = await api.get('/timesheets');
