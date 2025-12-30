@@ -36,6 +36,7 @@ import { toast } from "@/hooks/use-toast"
 import { useTimesheetManagement } from "@/hooks/timesheets"
 import { createColumns } from "./column"
 import { TimesheetStatus } from "@/store/core/thunks/timesheet-thunks"
+import { GenerateTimesheetDialog } from "@/components/admin/generate-timesheet-dialog"
 
 export default function TimesheetPage() {
   const { timesheets, isLoading, loadTimesheets, generateTimesheets, updateStatus, populateDays } = useTimesheetManagement()
@@ -95,21 +96,28 @@ export default function TimesheetPage() {
     },
   })
 
-  const handleGenerate = async () => {
-    // Hardcoded PayPeriod ID for now or fetch active period?
-    // In a real app, we'd perhaps show a dialog to select the period.
-    // For this demo, and since we just seeded one, let's try generating for ID 1.
+  // Dialog state for Generate Timesheets
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = React.useState(false)
+
+  const handleGenerateForPeriod = async (payPeriodId: number) => {
     try {
-        await generateTimesheets(1);
-        loadTimesheets(); // Refresh list
-    } catch (e) {
-        console.error("Generate failed", e);
-        alert("Failed to generate timesheets. Ensure Pay Period #1 exists (run seed).")
+      await generateTimesheets(payPeriodId)
+      toast({ title: "Success", description: "Timesheets generated successfully" })
+      loadTimesheets()
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Failed to generate timesheets"
+      toast({ title: "Error", description: message, variant: "destructive" })
+      throw e // Re-throw so dialog knows it failed
     }
   }
 
   return (
     <div className="w-full">
+      <GenerateTimesheetDialog
+        open={isGenerateDialogOpen}
+        onOpenChange={setIsGenerateDialogOpen}
+        onGenerate={handleGenerateForPeriod}
+      />
       <div className="flex items-center justify-between py-4">
         <div className="flex items-center gap-2">
           <Input
@@ -122,7 +130,7 @@ export default function TimesheetPage() {
           />
         </div>
         <div className="flex items-center gap-2">
-            <Button onClick={handleGenerate} variant="default">
+            <Button onClick={() => setIsGenerateDialogOpen(true)} variant="default">
                 <Plus className="mr-2 h-4 w-4" /> Generate Timesheets
             </Button>
             <DropdownMenu>
