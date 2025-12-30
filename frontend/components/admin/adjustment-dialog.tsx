@@ -22,7 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { AdjustmentField, AdjustmentMode, CreateAdjustmentDto } from "@/lib/timesheet.api"
+import { CreateAdjustmentDto } from "@/store/core/thunks/timesheet-thunks"
+
+// Type aliases for the component
+type AdjustmentField = 'REGULAR' | 'BREAK' | 'OVERTIME'
+type AdjustmentMode = 'DELTA' | 'OVERRIDE'
 
 interface AdjustmentDialogProps {
   open: boolean

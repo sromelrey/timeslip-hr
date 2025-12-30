@@ -17,9 +17,8 @@ import {
 } from "@/components/ui/table"
 import { ChevronLeft, Edit, AlertTriangle, Clock, Coffee } from "lucide-react"
 import Link from "next/link"
-import { TimesheetStatus } from "@/store/core/thunks/timesheet-thunks"
+import { TimesheetStatus, CreateAdjustmentDto } from "@/store/core/thunks/timesheet-thunks"
 import { AdjustmentDialog } from "@/components/admin/adjustment-dialog"
-import { CreateAdjustmentDto } from "@/lib/timesheet.api"
 import { toast } from "@/hooks/use-toast"
 
 export default function TimesheetDetailPage() {

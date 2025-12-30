@@ -121,3 +121,43 @@ export const populateTimesheetDays = createAsyncThunk(
   }
 );
 
+// TimeEvent interface for raw events
+export interface TimeEvent {
+  id: number;
+  employeeId: number;
+  type: 'CLOCK_IN' | 'CLOCK_OUT' | 'BREAK_IN' | 'BREAK_OUT';
+  happenedAt: string;
+  source: string;
+}
+
+export const fetchRawEvents = createAsyncThunk(
+  'timesheet/fetchRawEvents',
+  async (timesheetId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.get<TimeEvent[]>(`/timesheets/${timesheetId}/events`);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch raw events');
+    }
+  }
+);
+
+export interface CreateAdjustmentDto {
+  field: 'REGULAR' | 'BREAK' | 'OVERTIME';
+  mode: 'DELTA' | 'OVERRIDE';
+  deltaMinutes?: number;
+  overrideMinutes?: number;
+  reason: string;
+}
+
+export const createAdjustment = createAsyncThunk(
+  'timesheet/createAdjustment',
+  async ({ dayId, dto }: { dayId: number; dto: CreateAdjustmentDto }, { rejectWithValue }) => {
+    try {
+      const response = await api.post(`/timesheets/days/${dayId}/adjustments`, dto);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create adjustment');
+    }
+  }
+);

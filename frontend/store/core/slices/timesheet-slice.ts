@@ -6,12 +6,15 @@ import {
   updateTimesheetEntry,
   updateTimesheetStatus,
   populateTimesheetDays,
+  fetchRawEvents,
   Timesheet,
+  TimeEvent,
 } from '../thunks/timesheet-thunks';
 
 interface TimesheetState {
   timesheets: Timesheet[];
   selectedTimesheet: Timesheet | null;
+  rawEvents: TimeEvent[];
   loading: boolean;
   error: string | null;
 }
@@ -19,6 +22,7 @@ interface TimesheetState {
 const initialState: TimesheetState = {
   timesheets: [],
   selectedTimesheet: null,
+  rawEvents: [],
   loading: false,
   error: null,
 };
@@ -108,6 +112,10 @@ const timesheetSlice = createSlice({
       .addCase(populateTimesheetDays.rejected, (state, action) => {
           state.loading = false;
           state.error = action.payload as string;
+      })
+      // Fetch Raw Events
+      .addCase(fetchRawEvents.fulfilled, (state, action) => {
+          state.rawEvents = action.payload;
       });
   },
 });
