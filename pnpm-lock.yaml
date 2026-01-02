@@ -171,6 +171,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       harmonia-components:
         specifier: ^0.1.9
         version: 0.1.9(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(next@15.4.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
