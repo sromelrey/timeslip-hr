@@ -88,9 +88,45 @@ Standardized API interaction is handled in `lib/api.ts`.
 - **Responsive Design**: Mobile-first approach using Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`).
 - **Icons**: Always use `lucide-react`.
 
+## Custom Hooks & Clean JSX
+
+### Extract Logic into Custom Hooks
+- **Purpose**: Keep component JSX focused on presentation, move business logic to reusable hooks.
+- **Location**: Create hooks in `hooks/` directory using `use-` prefix (e.g., `use-payslip-actions.ts`).
+- **Pattern**: 
+  ```tsx
+  // hooks/use-feature-actions.ts
+  export function useFeatureActions() {
+    const dispatch = useAppDispatch();
+    const [loading, setLoading] = useState(false);
+    
+    const handleAction = async (id: number) => {
+      setLoading(true);
+      // business logic here
+      setLoading(false);
+    };
+    
+    return { handleAction, loading };
+  }
+  
+  // component.tsx
+  export function MyComponent() {
+    const { handleAction, loading } = useFeatureActions();
+    return <button onClick={() => handleAction(1)}>Action</button>;
+  }
+  ```
+
+### Component Composition
+- **Single Responsibility**: Each component should do one thing well.
+- **Prefer Composition**: Break large components into smaller, focused sub-components.
+- **Logic Extraction**: Event handlers with >5 lines should be in custom hooks or helper functions.
+- **Clean JSX**: Component body should primarily contain JSX, not business logic.
+
 ## Best Practices
 
 1. **Type Everything**: Avoid `any`. Define interfaces for API responses and component props.
 2. **Server vs Client Components**: Use `"use client"` directive only when necessary (event listeners, state, hooks).
 3. **Reusable UI**: If a component is used in more than one place, move it to `components/ui` or a feature folder.
 4. **Environment Variables**: Always use `NEXT_PUBLIC_` prefix for variables needed on the client.
+5. **Custom Hooks**: Extract complex logic into custom hooks to keep JSX clean and testable.
+6. **Component Size**: If a component exceeds 150 lines, consider splitting it into smaller components or extracting logic into hooks.

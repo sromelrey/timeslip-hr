@@ -4,6 +4,7 @@ import productReducer from './core/slices/product-slice';
 import employeeReducer from './core/slices/employee-slice';
 import timesheetReducer from './core/slices/timesheet-slice';
 import timeEventReducer from './core/slices/time-event-slice';
+import payrollReducer from './core/payroll-slice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     employee: employeeReducer,
     timesheet: timesheetReducer,
     timeEvent: timeEventReducer,
+    payroll: payrollReducer,
   },
 });
 

@@ -1,0 +1,90 @@
+### Pay Periods
+
+# Get all pay periods
+GET {{baseUrl}}/payroll/pay-periods
+Authorization: Bearer {{authToken}}
+
+###
+
+# Create pay period
+POST {{baseUrl}}/payroll/pay-periods
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-15"
+}
+
+###
+
+# Close pay period
+PATCH {{baseUrl}}/payroll/pay-periods/1/close
+Authorization: Bearer {{authToken}}
+
+###
+
+# Reopen pay period
+PATCH {{baseUrl}}/payroll/pay-periods/1/reopen
+Authorization: Bearer {{authToken}}
+
+###
+
+### Payslips
+
+# Get all payslips
+GET {{baseUrl}}/payroll/payslips
+Authorization: Bearer {{authToken}}
+
+###
+
+# Get payslips for specific pay period
+GET {{baseUrl}}/payroll/payslips?payPeriodId=1
+Authorization: Bearer {{authToken}}
+
+###
+
+# Get payslip details
+GET {{baseUrl}}/payroll/payslips/1
+Authorization: Bearer {{authToken}}
+
+###
+
+# Generate payslips for pay period
+POST {{baseUrl}}/payroll/payslips/generate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "payPeriodId": 1
+}
+
+###
+
+# Generate payslips for specific employees
+POST {{baseUrl}}/payroll/payslips/generate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "payPeriodId": 1,
+  "employeeIds": [1, 2]
+}
+
+###
+
+# Finalize payslip
+PATCH {{baseUrl}}/payroll/payslips/1/finalize
+Authorization: Bearer {{authToken}}
+
+###
+
+# Void payslip
+PATCH {{baseUrl}}/payroll/payslips/1/void
+Authorization: Bearer {{authToken}}
+
+###
+
+# Download payslip PDF
+GET {{baseUrl}}/payroll/payslips/1/pdf
+Authorization: Bearer {{authToken}}

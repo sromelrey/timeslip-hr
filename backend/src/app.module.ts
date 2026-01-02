@@ -6,6 +6,7 @@ import { ProductModule } from './modules/product/product.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { TimeEventModule } from './modules/time-event/time-event.module';
 import { TimesheetModule } from './modules/timesheet/timesheet.module';
+import { PayrollModule } from './modules/payroll/payroll.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { TimesheetModule } from './modules/timesheet/timesheet.module';
     EmployeeModule,
     TimeEventModule,
     TimesheetModule,
+    PayrollModule,
   ],
 })
 export class AppModule {}
