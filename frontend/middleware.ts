@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require authentication
-const protectedRoutes = ['/products', '/dashboard', '/employee', '/timesheet', '/payroll', '/settings', '/kiosk'];
+const protectedRoutes = ['/products', '/dashboard', '/employee', '/timesheet', '/payroll', '/settings', '/kiosk', '/portal'];
 
 // Routes only for non-authenticated users
 const authRoutes = ['/sign-in'];
@@ -16,7 +16,8 @@ const adminOnlyRoutes = ['/employee', '/payroll', '/settings'];
 // Default redirect for each role after login
 const roleDefaultRoutes: Record<string, string> = {
   ADMIN: '/dashboard',
-  EMPLOYEE: '/kiosk',
+  EMPLOYEE: '/portal/dashboard',
+  KIOSK: '/kiosk',
 };
 
 export function middleware(request: NextRequest) {
@@ -67,11 +68,21 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect Admins away from employee-only routes (Kiosk)
+  // Redirect non-KIOSK users away from /kiosk
   if (pathname.startsWith('/kiosk')) {
-    if (isAuthenticated && userRole === 'ADMIN') {
-      console.log('[Middleware] Redirecting Admin from /kiosk to /dashboard');
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+    if (isAuthenticated && userRole !== 'KIOSK') {
+      const redirectTo = roleDefaultRoutes[userRole] || '/portal/dashboard';
+      console.log(`[Middleware] Redirecting ${userRole} from /kiosk to:`, redirectTo);
+      return NextResponse.redirect(new URL(redirectTo, request.url));
+    }
+  }
+
+  // Redirect KIOSK users away from Admin or Portal routes
+  const nonKioskRoutes = ['/dashboard', '/employee', '/timesheet', '/payroll', '/settings', '/portal'];
+  if (nonKioskRoutes.some(route => pathname.startsWith(route))) {
+    if (isAuthenticated && userRole === 'KIOSK') {
+      console.log('[Middleware] Redirecting KIOSK user away from admin/portal to /kiosk');
+      return NextResponse.redirect(new URL('/kiosk', request.url));
     }
   }
 

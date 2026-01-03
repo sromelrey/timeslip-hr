@@ -11,10 +11,16 @@ export const PayPeriodSeeder: Seeder = {
     const payPeriodRepo = dataSource.getRepository(PayPeriod);
     const companyRepo = dataSource.getRepository(Company);
 
-    // Get the default company
-    const company = await companyRepo.findOne({ where: { name: 'Acme Corp' } });
-    if (!company) {
-      console.log('  ❌ Company not found. Run CompanySeeder first.');
+    const targetCompanies = await companyRepo.find({
+      where: [
+        { name: 'Acme Corp' },
+        { name: 'Tech Solutions Inc.' },
+        { name: 'Startup Hub' }
+      ]
+    });
+
+    if (targetCompanies.length === 0) {
+      console.log('  ❌ No companies found to seed pay periods.');
       return;
     }
 
@@ -24,22 +30,24 @@ export const PayPeriodSeeder: Seeder = {
     const startDateStr = startOfMonth.toISOString().split('T')[0];
     const endDateStr = endOfMonth.toISOString().split('T')[0];
 
-    let payPeriod = await payPeriodRepo.findOne({
-      where: { companyId: company.id, startDate: startDateStr, endDate: endDateStr },
-    });
-
-    if (!payPeriod) {
-      console.log(`  Creating pay period: ${startDateStr} to ${endDateStr}`);
-      payPeriod = payPeriodRepo.create({
-        company: company,
-        startDate: startDateStr,
-        endDate: endDateStr,
-        status: PayPeriodStatus.OPEN,
+    for (const company of targetCompanies) {
+      let payPeriod = await payPeriodRepo.findOne({
+        where: { companyId: company.id, startDate: startDateStr, endDate: endDateStr },
       });
-      await payPeriodRepo.save(payPeriod);
-      console.log(`  ✅ Created pay period ID: ${payPeriod.id}`);
-    } else {
-      console.log(`  ⏭️  Pay period ${startDateStr} to ${endDateStr} already exists (ID: ${payPeriod.id})`);
+
+      if (!payPeriod) {
+        console.log(`  Creating pay period for ${company.name}: ${startDateStr} to ${endDateStr}`);
+        payPeriod = payPeriodRepo.create({
+          company: company,
+          startDate: startDateStr,
+          endDate: endDateStr,
+          status: PayPeriodStatus.OPEN,
+        });
+        await payPeriodRepo.save(payPeriod);
+        console.log(`  ✅ Created pay period ID: ${payPeriod.id}`);
+      } else {
+        console.log(`  ⏭️  Pay period for ${company.name} already exists (ID: ${payPeriod.id})`);
+      }
     }
   },
 };

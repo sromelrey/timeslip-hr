@@ -78,6 +78,49 @@ Standardized API interaction is handled in `lib/api.ts`.
 - Automatically handles **JWT Bearer tokens** via request interceptors.
 - Implements **Token Refresh** logic via response interceptors (401 handling).
 
+### API File Standards
+
+**CRITICAL**: All API client files (`lib/*.api.ts`) MUST use the centralized `api` instance from `lib/api.ts`.
+
+#### ✅ Correct Pattern
+```typescript
+// lib/payroll.api.ts
+import api from './api';
+
+export const getPayPeriods = async (): Promise<PayPeriod[]> => {
+  const response = await api.get('/payroll/pay-periods');
+  return response.data;
+};
+
+export const createPayPeriod = async (dto: CreatePayPeriodDto): Promise<PayPeriod> => {
+  const response = await api.post('/payroll/pay-periods', dto);
+  return response.data;
+};
+```
+
+#### ❌ Incorrect Pattern (DO NOT DO THIS)
+```typescript
+// ❌ Don't create separate axios instances
+import axios from 'axios';
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
+// ❌ Don't manually pass tokens
+export const getPayPeriods = async (token: string): Promise<PayPeriod[]> => {
+  const response = await axios.get(`${baseURL}/payroll/pay-periods`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+```
+
+#### Why?
+- ✅ **Automatic JWT injection** - No need to manually get/pass tokens
+- ✅ **Automatic token refresh** - 401 errors trigger token refresh automatically
+- ✅ **Single source of truth** - All auth logic centralized in `lib/api.ts`
+- ✅ **Cleaner code** - No `localStorage.getItem('accessToken')` scattered everywhere
+- ✅ **Easier testing** - Mock one instance instead of multiple axios calls
+
+
 ### Token Management
 - `accessToken` and `refreshToken` are stored in `localStorage`.
 - An `auth=1` cookie is set for server-side middleware awareness.

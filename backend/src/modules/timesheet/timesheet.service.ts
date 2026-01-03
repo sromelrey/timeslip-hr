@@ -30,7 +30,7 @@ export class TimesheetService {
   async findAll(companyId: number): Promise<Timesheet[]> {
     return this.timesheetRepo.find({
       where: { payPeriod: { companyId } },
-      relations: ['employee', 'payPeriod'],
+      relations: ['employee', 'payPeriod', 'days'],
       order: { payPeriod: { startDate: 'DESC' }, employee: { lastName: 'ASC' } },
     });
   }
@@ -101,13 +101,23 @@ export class TimesheetService {
     }
 
     const { startDate, endDate } = timesheet.payPeriod;
+    
+    // Parse dates ensuring we capture the full range in local time
+    // startDate is 'YYYY-MM-DD'. Appending 'T00:00:00' forces local time parsing.
+    const start = new Date(`${startDate}T00:00:00`);
+    const end = new Date(`${endDate}T23:59:59.999`);
+
+    console.log(`Populating timesheet #${timesheetId} for events between ${start.toISOString()} and ${end.toISOString()}`);
+
     const events = await this.timeEventRepo.find({
       where: {
         employeeId: timesheet.employeeId,
-        happenedAt: Between(new Date(startDate), new Date(new Date(endDate).getTime() + 86400000)), // Include end day
+        happenedAt: Between(start, end),
       },
       order: { happenedAt: 'ASC' },
     });
+    
+    console.log(`Found ${events.length} events for timesheet #${timesheetId}`);
 
     // Group events by date
     const eventsByDate = new Map<string, TimeEvent[]>();
@@ -122,7 +132,7 @@ export class TimesheetService {
     const createdDays: TimesheetDay[] = [];
 
     for (const [dateKey, dayEvents] of eventsByDate) {
-      const { regularMinutes, breakMinutes, anomalies } = this.calculateDayHours(dayEvents);
+      const { regularMinutes, breakMinutes, overtimeMinutes, anomalies } = this.calculateDayHours(dayEvents);
 
       // Upsert TimesheetDay
       let day = await this.timesheetDayRepo.findOneBy({ timesheetId, workDate: dateKey });
@@ -134,6 +144,7 @@ export class TimesheetService {
       }
       day.regularMinutes = regularMinutes;
       day.breakMinutes = breakMinutes;
+      day.overtimeMinutes = overtimeMinutes;
       day.anomaliesJson = anomalies.length > 0 ? JSON.stringify(anomalies) : null;
       await this.timesheetDayRepo.save(day);
       createdDays.push(day);
@@ -149,7 +160,7 @@ export class TimesheetService {
   /**
    * Calculate work and break minutes from a day's events.
    */
-  private calculateDayHours(events: TimeEvent[]): { regularMinutes: number; breakMinutes: number; anomalies: string[] } {
+  private calculateDayHours(events: TimeEvent[]): { regularMinutes: number; breakMinutes: number; overtimeMinutes: number; anomalies: string[] } {
     let regularMinutes = 0;
     let breakMinutes = 0;
     const anomalies: string[] = [];
@@ -204,7 +215,16 @@ export class TimesheetService {
     // Subtract break time from regular time
     regularMinutes = Math.max(0, regularMinutes - breakMinutes);
 
-    return { regularMinutes, breakMinutes, anomalies };
+    // Calculate overtime (anything over 8 hours / 480 minutes)
+    const STANDARD_WORK_MINUTES = 480;
+    let overtimeMinutes = 0;
+    
+    if (regularMinutes > STANDARD_WORK_MINUTES) {
+      overtimeMinutes = regularMinutes - STANDARD_WORK_MINUTES;
+      regularMinutes = STANDARD_WORK_MINUTES;
+    }
+
+    return { regularMinutes, breakMinutes, overtimeMinutes, anomalies };
   }
 
   /**
@@ -318,13 +338,17 @@ export class TimesheetService {
     }
 
     const { startDate, endDate } = timesheet.payPeriod;
+    
+    // Parse dates ensuring we capture the full range in local time (matching populateDays logic)
+    const start = new Date(`${startDate}T00:00:00`);
+    const end = new Date(`${endDate}T23:59:59.999`);
+    
     return this.timeEventRepo.find({
       where: {
         employeeId: timesheet.employeeId,
-        happenedAt: Between(new Date(startDate), new Date(new Date(endDate).getTime() + 86400000)),
+        happenedAt: Between(start, end),
       },
       order: { happenedAt: 'ASC' },
     });
   }
 }
-

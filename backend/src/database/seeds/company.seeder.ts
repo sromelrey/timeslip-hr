@@ -7,17 +7,25 @@ export const CompanySeeder: Seeder = {
 
   async run(dataSource: DataSource): Promise<void> {
     const companyRepo = dataSource.getRepository(Company);
-    const companyName = 'Acme Corp';
+    
+    // Define companies to seed
+    const companiesToSeed = [
+      { name: 'Acme Corp' },
+      { name: 'Tech Solutions Inc.' },
+      { name: 'Startup Hub' }
+    ];
 
-    let company = await companyRepo.findOne({ where: { name: companyName } });
+    for (const companyData of companiesToSeed) {
+      let company = await companyRepo.findOne({ where: { name: companyData.name } });
 
-    if (!company) {
-      console.log(`  Creating company: ${companyName}`);
-      company = companyRepo.create({ name: companyName });
-      await companyRepo.save(company);
-      console.log(`  ✅ Created company: ${companyName}`);
-    } else {
-      console.log(`  ⏭️  Company "${companyName}" already exists`);
+      if (!company) {
+        console.log(`  Creating company: ${companyData.name}`);
+        company = companyRepo.create(companyData);
+        await companyRepo.save(company);
+        console.log(`  ✅ Created company: ${companyData.name}`);
+      } else {
+        console.log(`  ⏭️  Company "${companyData.name}" already exists`);
+      }
     }
   },
 };

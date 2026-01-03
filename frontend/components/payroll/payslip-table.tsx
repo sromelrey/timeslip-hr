@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Download } from "lucide-react";
 import type { Payslip } from "@/lib/payroll.api";
 import { usePayslipActions } from "@/hooks/use-payslip-actions";
 
@@ -24,9 +24,11 @@ export function PayslipTable({ payslips, loading }: PayslipTableProps) {
   const {
     handleFinalize,
     handleVoid,
+    handleDownloadPdf,
     formatCurrency,
     formatMinutes,
     actionLoading,
+    pdfLoading,
   } = usePayslipActions();
 
   if (loading && payslips.length === 0) {
@@ -120,19 +122,34 @@ export function PayslipTable({ payslips, loading }: PayslipTableProps) {
                   </>
                 )}
                 {payslip.status === "FINALIZED" && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleVoid(payslip.id)}
-                    disabled={actionLoading === payslip.id}
-                  >
-                    {actionLoading === payslip.id ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <XCircle className="w-4 h-4 mr-2" />
-                    )}
-                    Void
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDownloadPdf(payslip.id)}
+                      disabled={pdfLoading === payslip.id}
+                    >
+                      {pdfLoading === payslip.id ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 mr-2" />
+                      )}
+                      PDF
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleVoid(payslip.id)}
+                      disabled={actionLoading === payslip.id}
+                    >
+                      {actionLoading === payslip.id ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <XCircle className="w-4 h-4 mr-2" />
+                      )}
+                      Void
+                    </Button>
+                  </>
                 )}
               </TableCell>
             </TableRow>

@@ -13,6 +13,8 @@ export interface PayrollCalculationResult {
   totalRegularMinutes: number;
   totalOvertimeMinutes: number;
   totalBreakMinutes: number;
+  basicPay: number;
+  overtimePay: number;
   grossPay: number;
   hourlyRate?: number;
   dailyRate?: number;
@@ -107,25 +109,50 @@ export class PayrollService {
       }
     }
 
-    // Calculate gross pay based on employment type
-    let grossPay = 0;
+    // Calculate pay components
+    let basicPay = 0;
+    let overtimePay = 0;
+
+    // Overtime multiplier (default 1.25x)
+    const OT_MULTIPLIER = 1.25;
 
     switch (compensation.type) {
       case CompensationType.HOURLY: {
-        const totalHours = totalRegularMinutes / 60;
-        grossPay = totalHours * (compensation.hourlyRate || 0);
+        const hourlyRate = compensation.hourlyRate || 0;
+
+        // Basic Pay
+        basicPay = (totalRegularMinutes / 60) * hourlyRate;
+
+        // Overtime Pay
+        overtimePay = (totalOvertimeMinutes / 60) * hourlyRate * OT_MULTIPLIER;
         break;
       }
 
       case CompensationType.DAILY: {
-        grossPay = daysWorked * (compensation.dailyRate || 0);
+        const dailyRate = compensation.dailyRate || 0;
+        
+        // Basic Pay (based on days worked)
+        // Note: This logic assumes 'daysWorked' covers the 'regularMinutes'. 
+        // If they worked partial days, this might overpay, but sticking to simple daily rate for now.
+        basicPay = daysWorked * dailyRate;
+
+        // Overtime Pay (convert daily rate to hourly)
+        // Assuming 8 hours workday for rate calculation
+        const hourlyRate = dailyRate / 8;
+        overtimePay = (totalOvertimeMinutes / 60) * hourlyRate * OT_MULTIPLIER;
         break;
       }
 
       case CompensationType.SALARIED: {
-        // For salaried, use monthly salary divided by 2 (semi-monthly)
-        // or adjust based on your pay period frequency
-        grossPay = (compensation.monthlySalary || 0) / 2;
+        const monthlySalary = compensation.monthlySalary || 0;
+
+        // Basic Pay (semi-monthly)
+        basicPay = monthlySalary / 2;
+
+        // Overtime Pay (convert monthly to hourly)
+        // Assuming 22 days * 8 hours = 176 hours/month standard
+        const hourlyRate = monthlySalary / 176;
+        overtimePay = (totalOvertimeMinutes / 60) * hourlyRate * OT_MULTIPLIER;
         break;
       }
 
@@ -135,12 +162,18 @@ export class PayrollService {
         );
     }
 
+    basicPay = Math.round(basicPay * 100) / 100;
+    overtimePay = Math.round(overtimePay * 100) / 100;
+    const grossPay = parseFloat((basicPay + overtimePay).toFixed(2));
+
     return {
       employeeId,
       totalRegularMinutes,
       totalOvertimeMinutes,
       totalBreakMinutes,
-      grossPay: Math.round(grossPay * 100) / 100, // Round to 2 decimals
+      basicPay,
+      overtimePay,
+      grossPay,
       hourlyRate: compensation.hourlyRate ?? undefined,
       dailyRate: compensation.dailyRate ?? undefined,
       monthlySalary: compensation.monthlySalary ?? undefined,

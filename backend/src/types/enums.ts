@@ -1,6 +1,7 @@
 export enum UserRole {
   ADMIN = 'ADMIN',
   EMPLOYEE = 'EMPLOYEE',
+  KIOSK = 'KIOSK',
 }
 
 export enum TimesheetStatus {
@@ -66,4 +67,18 @@ export enum CompensationType {
   HOURLY = 'HOURLY',
   SALARIED = 'SALARIED',
   DAILY = 'DAILY',
+}
+
+export enum DeductionType {
+  TAX = 'TAX',
+  SSS = 'SSS',
+  PHILHEALTH = 'PHILHEALTH',
+  PAGIBIG = 'PAGIBIG',
+  LOAN = 'LOAN',
+  OTHER = 'OTHER',
+}
+
+export enum DeductionCalculationType {
+  FIXED = 'FIXED',
+  PERCENTAGE = 'PERCENTAGE',
 }
