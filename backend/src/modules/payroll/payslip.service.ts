@@ -7,6 +7,7 @@ import { PayPeriod } from '@/entities/pay-period.entity';
 import { Employee } from '@/entities/employee.entity';
 import { PayslipStatus, PayslipItemType } from '@/types/enums';
 import { PayrollService } from './payroll.service';
+import { DeductionService } from './deduction.service';
 import { GeneratePayslipsDto } from './dtos/generate-payslips.dto';
 
 @Injectable()
@@ -21,9 +22,10 @@ export class PayslipService {
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
     private readonly payrollService: PayrollService,
+    private readonly deductionService: DeductionService,
   ) {}
 
-  async findAll(companyId: number, payPeriodId?: number): Promise<Payslip[]> {
+  async findAll(companyId: number, payPeriodId?: number, employeeId?: number): Promise<Payslip[]> {
     const query = this.payslipRepo
       .createQueryBuilder('ps')
       .leftJoinAndSelect('ps.employee', 'employee')
@@ -34,6 +36,10 @@ export class PayslipService {
 
     if (payPeriodId) {
       query.andWhere('ps.pay_period_id = :payPeriodId', { payPeriodId });
+    }
+
+    if (employeeId) {
+      query.andWhere('ps.employee_id = :employeeId', { employeeId });
     }
 
     return query.getMany();
@@ -115,6 +121,16 @@ export class PayslipService {
         continue;
       }
 
+      // Calculate deductions for this employee
+      const deductions = await this.deductionService.calculateDeductions(
+        calc.employeeId,
+        calc.grossPay,
+        new Date(payPeriod.endDate),
+      );
+
+      const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0);
+      const netPay = calc.grossPay - totalDeductions;
+
       // Create payslip
       const payslip = this.payslipRepo.create({
         employeeId: calc.employeeId,
@@ -123,8 +139,8 @@ export class PayslipService {
         totalRegularMinutes: calc.totalRegularMinutes,
         totalOvertimeMinutes: calc.totalOvertimeMinutes,
         grossPay: calc.grossPay,
-        totalDeductions: 0, // No deductions for now
-        netPay: calc.grossPay, // Net = Gross if no deductions
+        totalDeductions,
+        netPay,
         generatedByUserId: userId,
         generatedAt: new Date(),
         currency: 'PHP', // Default currency
@@ -133,15 +149,15 @@ export class PayslipService {
       const savedPayslip = await this.payslipRepo.save(payslip);
 
       // Create earnings item
-      const earningsItem = this.payslipItemRepo.create({
+      // Create Basic Pay item
+      const basicPayItem = this.payslipItemRepo.create({
         payslipId: savedPayslip.id,
         type: PayslipItemType.EARNING,
         code: 'BASIC_PAY',
         label: 'Basic Pay',
-        amount: calc.grossPay,
+        amount: calc.basicPay,
         metaJson: JSON.stringify({
           totalRegularMinutes: calc.totalRegularMinutes,
-          totalOvertimeMinutes: calc.totalOvertimeMinutes,
           hourlyRate: calc.hourlyRate,
           dailyRate: calc.dailyRate,
           monthlySalary: calc.monthlySalary,
@@ -149,7 +165,35 @@ export class PayslipService {
         }),
       });
 
-      await this.payslipItemRepo.save(earningsItem);
+      await this.payslipItemRepo.save(basicPayItem);
+
+      // Create Overtime Pay item if applicable
+      if (calc.overtimePay > 0) {
+        const overtimeItem = this.payslipItemRepo.create({
+          payslipId: savedPayslip.id,
+          type: PayslipItemType.EARNING,
+          code: 'OVERTIME_PAY',
+          label: 'Overtime Pay',
+          amount: calc.overtimePay,
+          metaJson: JSON.stringify({
+            totalOvertimeMinutes: calc.totalOvertimeMinutes,
+            multiplier: 1.25,
+          }),
+        });
+        await this.payslipItemRepo.save(overtimeItem);
+      }
+
+      // Create deduction items
+      for (const deduction of deductions) {
+        const deductionItem = this.payslipItemRepo.create({
+          payslipId: savedPayslip.id,
+          type: PayslipItemType.DEDUCTION,
+          code: deduction.code,
+          label: deduction.label,
+          amount: deduction.amount,
+        });
+        await this.payslipItemRepo.save(deductionItem);
+      }
 
       payslips.push(savedPayslip);
     }

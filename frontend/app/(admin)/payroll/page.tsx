@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Banknote, Calendar, Receipt } from "lucide-react";
+import { Banknote, Calendar, Receipt, MinusCircle } from "lucide-react";
 import { PayPeriodTab } from "@/components/payroll/pay-period-tab";
 import { PayslipTab } from "@/components/payroll/payslip-tab";
+import { DeductionTab } from "@/components/payroll/deduction-tab";
 
 export default function PayrollPage() {
   const [activeTab, setActiveTab] = useState("pay-periods");
@@ -24,7 +25,7 @@ export default function PayrollPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
           <TabsTrigger value="pay-periods" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Pay Periods
@@ -32,6 +33,10 @@ export default function PayrollPage() {
           <TabsTrigger value="payslips" className="flex items-center gap-2">
             <Receipt className="w-4 h-4" />
             Payslips
+          </TabsTrigger>
+          <TabsTrigger value="deductions" className="flex items-center gap-2">
+            <MinusCircle className="w-4 h-4" />
+            Deductions
           </TabsTrigger>
         </TabsList>
 
@@ -41,6 +46,10 @@ export default function PayrollPage() {
 
         <TabsContent value="payslips" className="mt-6">
           <PayslipTab />
+        </TabsContent>
+
+        <TabsContent value="deductions" className="mt-6">
+          <DeductionTab />
         </TabsContent>
       </Tabs>
     </div>

@@ -10,17 +10,20 @@ import {
   ParseIntPipe,
   Req,
   Res,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { PayPeriodService } from './pay-period.service';
 import { PayslipService } from './payslip.service';
+import { PayslipPdfService } from './payslip-pdf.service';
+import { PayslipExportService } from './payslip-export.service';
 import { CreatePayPeriodDto } from './dtos/create-pay-period.dto';
 import { GeneratePayslipsDto } from './dtos/generate-payslips.dto';
 
 interface AuthenticatedRequest extends Request {
-  user: { id: number; companyId: number };
+  user: { id: number; companyId: number; employeeId?: number };
 }
 
 @ApiTags('Payroll')
@@ -31,6 +34,8 @@ export class PayrollController {
   constructor(
     private readonly payPeriodService: PayPeriodService,
     private readonly payslipService: PayslipService,
+    private readonly payslipPdfService: PayslipPdfService,
+    private readonly payslipExportService: PayslipExportService,
   ) {}
 
   // ==================== Pay Period Endpoints ====================
@@ -69,6 +74,15 @@ export class PayrollController {
   }
 
   // ==================== Payslip Endpoints ====================
+
+  @Get('my-payslips')
+  @ApiOperation({ summary: 'Get current employee payslips' })
+  async getMyPayslips(@Req() req: AuthenticatedRequest) {
+    if (!req.user.employeeId) {
+      throw new BadRequestException('User is not linked to an employee record');
+    }
+    return this.payslipService.findAll(req.user.companyId, undefined, req.user.employeeId);
+  }
 
   @Get('payslips')
   @ApiOperation({ summary: 'List all payslips, optionally filtered by pay period' })
@@ -125,7 +139,36 @@ export class PayrollController {
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
   ) {
-    // TODO: Implement PDF generation in next phase
-    res.status(501).json({ message: 'PDF generation not yet implemented' });
+    const pdfBuffer = await this.payslipPdfService.generatePdf(
+      id,
+      req.user.companyId,
+    );
+    
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="payslip-${id}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+    res.end(pdfBuffer);
+  }
+
+  @Get('pay-periods/:id/export-zip')
+  @ApiOperation({ summary: 'Export all payslips for a pay period as ZIP' })
+  async exportPayslipsZip(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const zipStream = await this.payslipExportService.generatePayslipsZip(
+      id,
+      req.user.companyId,
+    );
+
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="payslips-period-${id}.zip"`,
+    });
+
+    zipStream.pipe(res);
   }
 }

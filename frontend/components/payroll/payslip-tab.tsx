@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Download } from "lucide-react";
 import {
   fetchPayPeriods,
   fetchPayslips,
 } from "@/store/core/thunks/payroll-thunks";
+import { exportPayslipsZip } from "@/lib/payroll.api";
 import { PayslipTable } from "./payslip-table";
 import { GeneratePayslipsDialog } from "./generate-payslips-dialog";
 import {
@@ -42,6 +43,24 @@ export function PayslipTab() {
     dispatch(fetchPayslips(periodId));
   };
 
+  const handleExportZip = async () => {
+    if (selectedPeriod === "all") return;
+    try {
+      const blob = await exportPayslipsZip(parseInt(selectedPeriod));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `payslips-period-${selectedPeriod}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (error) {
+      console.error('Failed to export ZIP:', error);
+      alert('Failed to export ZIP'); // Simple alert for now
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -74,6 +93,16 @@ export function PayslipTab() {
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
             Refresh
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportZip}
+            disabled={loading || selectedPeriod === "all"}
+            title={selectedPeriod === "all" ? "Select a period to export" : "Export all payslips as ZIP"}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export All
           </Button>
           <Button size="sm" onClick={() => setGenerateDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />

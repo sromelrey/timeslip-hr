@@ -16,8 +16,7 @@ import {
 export const fetchPayPeriods = () => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
   try {
-    const token = localStorage.getItem('token') || '';
-    const payPeriods = await payrollApi.getPayPeriods(token);
+    const payPeriods = await payrollApi.getPayPeriods();
     dispatch(setPayPeriods(payPeriods));
   } catch (error: any) {
     dispatch(setError(error.response?.data?.message || 'Failed to fetch pay periods'));
@@ -30,8 +29,7 @@ export const createPayPeriod =
   (dto: payrollApi.CreatePayPeriodDto) => async (dispatch: AppDispatch) => {
     dispatch(setLoading(true));
     try {
-      const token = localStorage.getItem('token') || '';
-      const payPeriod = await payrollApi.createPayPeriod(token, dto);
+      const payPeriod = await payrollApi.createPayPeriod(dto);
       dispatch(addPayPeriod(payPeriod));
       return payPeriod;
     } catch (error: any) {
@@ -46,8 +44,7 @@ export const createPayPeriod =
 export const closePayPeriod = (id: number) => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
   try {
-    const token = localStorage.getItem('token') || '';
-    const payPeriod = await payrollApi.closePayPeriod(token, id);
+    const payPeriod = await payrollApi.closePayPeriod(id);
     dispatch(updatePayPeriod(payPeriod));
     return payPeriod;
   } catch (error: any) {
@@ -62,8 +59,7 @@ export const closePayPeriod = (id: number) => async (dispatch: AppDispatch) => {
 export const reopenPayPeriod = (id: number) => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
   try {
-    const token = localStorage.getItem('token') || '';
-    const payPeriod = await payrollApi.reopenPayPeriod(token, id);
+    const payPeriod = await payrollApi.reopenPayPeriod(id);
     dispatch(updatePayPeriod(payPeriod));
     return payPeriod;
   } catch (error: any) {
@@ -80,8 +76,7 @@ export const fetchPayslips =
   (payPeriodId?: number) => async (dispatch: AppDispatch) => {
     dispatch(setLoading(true));
     try {
-      const token = localStorage.getItem('token') || '';
-      const payslips = await payrollApi.getPayslips(token, payPeriodId);
+      const payslips = await payrollApi.getPayslips(payPeriodId);
       dispatch(setPayslips(payslips));
     } catch (error: any) {
       dispatch(setError(error.response?.data?.message || 'Failed to fetch payslips'));
@@ -93,8 +88,7 @@ export const fetchPayslips =
 export const fetchPayslip = (id: number) => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
   try {
-    const token = localStorage.getItem('token') || '';
-    const payslip = await payrollApi.getPayslip(token, id);
+    const payslip = await payrollApi.getPayslip(id);
     dispatch(setSelectedPayslip(payslip));
     return payslip;
   } catch (error: any) {
@@ -110,8 +104,7 @@ export const generatePayslips =
   (dto: payrollApi.GeneratePayslipsDto) => async (dispatch: AppDispatch) => {
     dispatch(setLoading(true));
     try {
-      const token = localStorage.getItem('token') || '';
-      const payslips = await payrollApi.generatePayslips(token, dto);
+      const payslips = await payrollApi.generatePayslips(dto);
       dispatch(addPayslips(payslips));
       return payslips;
     } catch (error: any) {
@@ -126,8 +119,7 @@ export const generatePayslips =
 export const finalizePayslip = (id: number) => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
   try {
-    const token = localStorage.getItem('token') || '';
-    const payslip = await payrollApi.finalizePayslip(token, id);
+    const payslip = await payrollApi.finalizePayslip(id);
     dispatch(updatePayslip(payslip));
     return payslip;
   } catch (error: any) {
@@ -142,8 +134,7 @@ export const finalizePayslip = (id: number) => async (dispatch: AppDispatch) => 
 export const voidPayslip = (id: number) => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
   try {
-    const token = localStorage.getItem('token') || '';
-    const payslip = await payrollApi.voidPayslip(token, id);
+    const payslip = await payrollApi.voidPayslip(id);
     dispatch(updatePayslip(payslip));
     return payslip;
   } catch (error: any) {

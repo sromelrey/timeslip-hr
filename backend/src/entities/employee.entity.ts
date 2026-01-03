@@ -7,6 +7,7 @@ import { EmployeeCompensation } from './employee-compensation.entity';
 import { TimeEvent } from './time-event.entity';
 import { Timesheet } from './timesheet.entity';
 import { Payslip } from './payslip.entity';
+import { Deduction } from './deduction.entity';
 import { EmploymentType } from '@/types/enums';
 
 
@@ -65,4 +66,7 @@ export class Employee extends CommonEntity {
 
   @OneToMany(() => Payslip, (ps) => ps.employee)
   payslips: Payslip[];
+
+  @OneToMany(() => Deduction, (deduction) => deduction.employee)
+  deductions: Deduction[];
 }

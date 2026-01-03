@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import api from './api';
 
 export interface PayPeriod {
   id: number;
@@ -64,126 +62,69 @@ export interface GeneratePayslipsDto {
 }
 
 // Pay Period API
-export const getPayPeriods = async (token: string): Promise<PayPeriod[]> => {
-  const response = await axios.get(`${baseURL}/payroll/pay-periods`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const getPayPeriods = async (): Promise<PayPeriod[]> => {
+  const response = await api.get('/payroll/pay-periods');
   return response.data;
 };
 
 export const createPayPeriod = async (
-  token: string,
   dto: CreatePayPeriodDto
 ): Promise<PayPeriod> => {
-  const response = await axios.post(`${baseURL}/payroll/pay-periods`, dto, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.post('/payroll/pay-periods', dto);
   return response.data;
 };
 
-export const closePayPeriod = async (
-  token: string,
-  id: number
-): Promise<PayPeriod> => {
-  const response = await axios.patch(
-    `${baseURL}/payroll/pay-periods/${id}/close`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+export const closePayPeriod = async (id: number): Promise<PayPeriod> => {
+  const response = await api.patch(`/payroll/pay-periods/${id}/close`, {});
   return response.data;
 };
 
-export const reopenPayPeriod = async (
-  token: string,
-  id: number
-): Promise<PayPeriod> => {
-  const response = await axios.patch(
-    `${baseURL}/payroll/pay-periods/${id}/reopen`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+export const reopenPayPeriod = async (id: number): Promise<PayPeriod> => {
+  const response = await api.patch(`/payroll/pay-periods/${id}/reopen`, {});
   return response.data;
 };
 
 // Payslip API
 export const getPayslips = async (
-  token: string,
   payPeriodId?: number
 ): Promise<Payslip[]> => {
   const params = payPeriodId ? { payPeriodId } : {};
-  const response = await axios.get(`${baseURL}/payroll/payslips`, {
-    params,
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.get('/payroll/payslips', { params });
   return response.data;
 };
 
-export const getPayslip = async (
-  token: string,
-  id: number
-): Promise<Payslip> => {
-  const response = await axios.get(`${baseURL}/payroll/payslips/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const getPayslip = async (id: number): Promise<Payslip> => {
+  const response = await api.get(`/payroll/payslips/${id}`);
   return response.data;
 };
 
 export const generatePayslips = async (
-  token: string,
   dto: GeneratePayslipsDto
 ): Promise<Payslip[]> => {
-  const response = await axios.post(
-    `${baseURL}/payroll/payslips/generate`,
-    dto,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+  const response = await api.post('/payroll/payslips/generate', dto);
   return response.data;
 };
 
-export const finalizePayslip = async (
-  token: string,
-  id: number
-): Promise<Payslip> => {
-  const response = await axios.patch(
-    `${baseURL}/payroll/payslips/${id}/finalize`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+export const finalizePayslip = async (id: number): Promise<Payslip> => {
+  const response = await api.patch(`/payroll/payslips/${id}/finalize`, {});
   return response.data;
 };
 
-export const voidPayslip = async (
-  token: string,
-  id: number
-): Promise<Payslip> => {
-  const response = await axios.patch(
-    `${baseURL}/payroll/payslips/${id}/void`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+export const voidPayslip = async (id: number): Promise<Payslip> => {
+  const response = await api.patch(`/payroll/payslips/${id}/void`, {});
   return response.data;
 };
 
-export const downloadPayslipPdf = async (
-  token: string,
-  id: number
-): Promise<Blob> => {
-  const response = await axios.get(
-    `${baseURL}/payroll/payslips/${id}/pdf`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      responseType: 'blob',
-    }
-  );
+export const downloadPayslipPdf = async (id: number): Promise<Blob> => {
+  const response = await api.get(`/payroll/payslips/${id}/pdf`, {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+export const exportPayslipsZip = async (payPeriodId: number): Promise<Blob> => {
+  const response = await api.get(`/payroll/pay-periods/${payPeriodId}/export-zip`, {
+    responseType: 'blob',
+  });
   return response.data;
 };
