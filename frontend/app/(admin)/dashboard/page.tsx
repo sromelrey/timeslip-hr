@@ -1,52 +1,116 @@
 "use client";
 
 import { useAuth } from "@/hooks/auth";
+import { useDashboardStats } from "@/hooks/use-dashboard-stats";
 import { 
   Users, 
   Clock, 
   Calendar, 
-  TrendingUp 
+  TrendingUp,
+  RefreshCw
 } from "lucide-react";
+import { StatCard } from "@/components/admin/dashboard/StatCard";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { stats, loading, error, refetch } = useDashboardStats();
 
-  const stats = [
-    { name: "Total Employees", value: "124", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
-    { name: "Attendance Today", value: "92%", icon: Clock, color: "text-green-500", bg: "bg-green-50" },
-    { name: "Pending Approvals", value: "8", icon: Calendar, color: "text-orange-500", bg: "bg-orange-50" },
-    { name: "Monthly Growth", value: "+12.5%", icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-50" },
+  if (loading && !stats) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Loading...</h1>
+          <p className="text-muted-foreground">Fetching dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Error</h1>
+          <p className="text-destructive">{error}</p>
+          <Button onClick={refetch} className="mt-4">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const statCards = [
+    { 
+      name: "Total Employees", 
+      value: stats?.totalEmployees || 0, 
+      icon: Users, 
+      color: "text-blue-500", 
+      bg: "bg-blue-50" 
+    },
+    { 
+      name: "Attendance Today", 
+      value: `${stats?.attendanceToday.percentage || 0}%`, 
+      icon: Clock, 
+      color: "text-green-500", 
+      bg: "bg-green-50" 
+    },
+    { 
+      name: "Pending Approvals", 
+      value: (stats?.pendingApprovals.timesheets || 0) + (stats?.pendingApprovals.payslips || 0), 
+      icon: Calendar, 
+      color: "text-orange-500", 
+      bg: "bg-orange-50" 
+    },
+    { 
+      name: "Present Today", 
+      value: `${stats?.attendanceToday.present || 0}/${stats?.attendanceToday.total || 0}`, 
+      icon: TrendingUp, 
+      color: "text-purple-500", 
+      bg: "bg-purple-50" 
+    },
   ];
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Welcome back, {user?.firstName || user?.name || 'Admin'}</h1>
-        <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your team today.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Welcome back, {user?.firstName || user?.name || 'Admin'}
+          </h1>
+          <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your team today.</p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={refetch}
+          disabled={loading}
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="p-6 bg-card border border-border rounded-xl shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-lg ${stat.bg} ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{stat.name}</p>
-                <h3 className="text-2xl font-bold">{stat.value}</h3>
-              </div>
-            </div>
-          </div>
+        {statCards.map((stat) => (
+          <StatCard key={stat.name} {...stat} />
         ))}
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="p-6 bg-card border border-border rounded-xl shadow-sm h-64 flex items-center justify-center">
-            <p className="text-muted-foreground italic">Activity Chart Placeholder</p>
+        <div className="p-6 bg-card border border-border rounded-xl shadow-sm h-64">
+          <h3 className="text-lg font-semibold mb-4">Attendance Overview</h3>
+          <div className="flex items-center justify-center h-40">
+            <p className="text-muted-foreground italic">Chart visualization coming soon</p>
+          </div>
         </div>
-        <div className="p-6 bg-card border border-border rounded-xl shadow-sm h-64 flex items-center justify-center">
-            <p className="text-muted-foreground italic">Recent Notifications Placeholder</p>
+        <div className="p-6 bg-card border border-border rounded-xl shadow-sm h-64">
+          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+          <div className="flex items-center justify-center h-40">
+            <p className="text-muted-foreground italic">Activity feed coming soon</p>
+          </div>
         </div>
       </div>
     </div>

@@ -13,10 +13,10 @@ Based on the current project state and `TICKET.md`.
 - [x] **Adjustment Workflow**: API and UI for manual time adjustments.
 
 ## 3. Payroll & Payslips (Epic 5)
-- [ ] **Payroll Calculation Engine**: Logic to compute gross pay (Hours * Rate) + deductibles.
-- [ ] **Payslip Generation**: Generate finalized payslip records for a Pay Period.
-- [ ] **PDF Export**: Generate PDF files for payslips.
-- [ ] **Pay Period Management**: Admin UI to open/close pay periods.
+- [x] **Payroll Calculation Engine**: Logic to compute gross pay (Hours * Rate) + deductibles.
+- [x] **Payslip Generation**: Generate finalized payslip records for a Pay Period.
+- [x] **PDF Export**: Generate PDF files for payslips.
+- [x] **Pay Period Management**: Admin UI to open/close pay periods.
 
 ## 4. Admin Dashboard (Epic 6)
 - [ ] **Real-time Status**: Dashboard widget showing who is currently present/absent.
