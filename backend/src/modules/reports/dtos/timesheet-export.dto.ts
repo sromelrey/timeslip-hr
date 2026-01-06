@@ -4,7 +4,6 @@ import {
   IsDateString,
   IsEnum,
   IsString,
-  IsBoolean,
 } from 'class-validator';
 import { TimesheetStatus } from '@/types/enums';
 

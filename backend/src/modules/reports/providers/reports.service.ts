@@ -10,7 +10,7 @@ import { AnomalyType } from '@/types/report.types';
 import { TimeEventType } from '@/types/enums';
 
 // Simple CSV generation utility
-function generateCSV(headers: string[], rows: any[][]): string {
+function generateCSV(headers: string[], rows: (string | number)[][]): string {
   const escape = (field: string | number): string => {
     const str = String(field);
     if (str.includes(',') || str.includes('"') || str.includes('\n')) {
@@ -157,7 +157,7 @@ export class ReportsService {
     const employees = await employeesQuery.getRawMany();
 
     // For each employee and date, calculate attendance
-    const summary: any[] = [];
+    const summary: Array<Record<string, string | number>> = [];
     const currentDate = new Date(startDate);
 
     while (currentDate <= endDate) {
