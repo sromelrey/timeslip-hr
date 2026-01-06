@@ -30,4 +30,22 @@ export class Setting extends CommonEntity {
 
   @Column({ name: 'grace_period_minutes', type: 'int', default: 0 })
   gracePeriodMinutes: number;
+
+  @Column({ name: 'pay_period_type', type: 'varchar', length: 30, default: 'WEEKLY' })
+  payPeriodType: string;
+
+  @Column({ name: 'default_hourly_rate', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  defaultHourlyRate?: number | null;
+
+  @Column({ name: 'session_duration_minutes', type: 'int', default: 480 })
+  sessionDurationMinutes: number;
+
+  @Column({ name: 'password_policy', type: 'text', nullable: true })
+  passwordPolicy?: string | null;
+
+  @Column({ name: 'pin_policy', type: 'text', nullable: true })
+  pinPolicy?: string | null;
+
+  @Column({ name: 'data_retention_months', type: 'int', nullable: true })
+  dataRetentionMonths?: number | null;
 }
