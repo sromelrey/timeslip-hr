@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { getDashboardStats } from '@/lib/dashboard.api';
+import { getDashboardStats, getCurrentlyActive } from '@/lib/dashboard.api';
 
 export const fetchDashboardStats = createAsyncThunk(
   'dashboard/fetchStats',
@@ -10,6 +10,20 @@ export const fetchDashboardStats = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch dashboard stats'
+      );
+    }
+  }
+);
+
+export const fetchCurrentlyActiveEmployees = createAsyncThunk(
+  'dashboard/fetchCurrentlyActive',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await getCurrentlyActive();
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch active employees'
       );
     }
   }

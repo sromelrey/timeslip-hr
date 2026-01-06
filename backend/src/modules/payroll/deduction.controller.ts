@@ -14,7 +14,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { DeductionService } from './deduction.service';
+import { DeductionService } from './providers/deduction.service';
 import { CreateDeductionDto } from './dtos/create-deduction.dto';
 import { UpdateDeductionDto } from './dtos/update-deduction.dto';
 

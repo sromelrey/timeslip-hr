@@ -7,6 +7,7 @@ import timeEventReducer from './core/slices/time-event-slice';
 import payrollReducer from './core/payroll-slice';
 import deductionReducer from './core/slices/deduction-slice';
 import dashboardReducer from './core/slices/dashboard-slice';
+import reportsReducer from './core/slices/reports-slice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     payroll: payrollReducer,
     deduction: deductionReducer,
     dashboard: dashboardReducer,
+    reports: reportsReducer,
   },
 });
 

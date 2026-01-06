@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EmployeeCompensation } from '@/entities/employee-compensation.entity';
 import { Employee } from '@/entities/employee.entity';
-import { CreateCompensationDto } from './dtos/create-compensation.dto';
+import { CreateCompensationDto } from '../dtos/create-compensation.dto';
 
 @Injectable()
 export class EmployeeCompensationService {

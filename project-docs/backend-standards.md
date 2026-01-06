@@ -43,11 +43,36 @@ backend/
 - **Functions & Variables**: Use `camelCase`.
 
 ### Module Structure
-Each feature module should ideally contain:
-- `*.module.ts`: Module definition.
-- `*.controller.ts`: API endpoints and request handling.
-- `*.service.ts`: Business logic.
-- `dtos/`: Data Transfer Objects for validation.
+Each feature module follows a standardized structure for consistency and maintainability:
+
+```text
+module-name/
+├── *.module.ts          # Module definition and dependency injection
+├── *.controller.ts      # API endpoints and request handling
+├── providers/           # Services, strategies, and business logic
+│   ├── *.service.ts     # Domain-specific business logic
+│   └── *.strategy.ts    # Passport strategies (for auth module)
+└── dtos/                # Data Transfer Objects for validation
+```
+
+#### Providers Directory
+**Purpose**: Centralized location for all injectable services and strategies within a module.
+
+**What goes in `providers/`**:
+- **Services** (`*.service.ts`): Business logic, data manipulation, repository interactions
+- **Strategies** (`*.strategy.ts`): Passport authentication strategies (JWT, Local, etc.)
+- **Specialized Services**: PDF generators, export services, calculation engines
+
+**Examples**:
+- `auth/providers/` → `auth.service.ts`, `jwt.strategy.ts`, `local.strategy.ts`
+- `payroll/providers/` → `payroll.service.ts`, `payslip.service.ts`, `pay-period.service.ts`, `deduction.service.ts`, `payslip-pdf.service.ts`, `payslip-export.service.ts`
+- `employee/providers/` → `employee.service.ts`, `employee-compensation.service.ts`
+
+**Benefits**:
+- Clear separation between controllers (routing) and business logic
+- Easier to locate and organize related services
+- Promotes single responsibility principle
+- Simplifies module imports and provider registration
 
 ### Centralized Types (src/types)
 All shared TypeScript definitions must be located in the `src/types` directory:

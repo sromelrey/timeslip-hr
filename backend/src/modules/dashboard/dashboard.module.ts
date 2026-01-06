@@ -5,7 +5,7 @@ import { TimeEvent } from '@/entities/time-event.entity';
 import { Timesheet } from '@/entities/timesheet.entity';
 import { Payslip } from '@/entities/payslip.entity';
 import { DashboardController } from './dashboard.controller';
-import { DashboardService } from './dashboard.service';
+import { DashboardService } from './providers/dashboard.service';
 
 @Module({
   imports: [
