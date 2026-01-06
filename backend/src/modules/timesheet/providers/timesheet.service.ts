@@ -1,14 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
-import { Timesheet } from '../../entities/timesheet.entity';
-import { TimesheetDay } from '../../entities/timesheet-day.entity';
-import { TimesheetAdjustment } from '../../entities/timesheet-adjustment.entity';
-import { PayPeriod } from '../../entities/pay-period.entity';
-import { Employee } from '../../entities/employee.entity';
-import { TimeEvent } from '../../entities/time-event.entity';
+import { Timesheet } from '@/entities/timesheet.entity';
+import { TimesheetDay } from '@/entities/timesheet-day.entity';
+import { TimesheetAdjustment } from '@/entities/timesheet-adjustment.entity';
+import { PayPeriod } from '@/entities/pay-period.entity';
+import { Employee } from '@/entities/employee.entity';
+import { TimeEvent } from '@/entities/time-event.entity';
 import { TimesheetStatus, TimeEventType, TimesheetAdjustmentField, TimesheetAdjustmentMode } from '@/types/enums';
-import { CreateAdjustmentDto } from './dtos/create-adjustment.dto';
+import { CreateAdjustmentDto } from '../dtos/create-adjustment.dto';
 
 @Injectable()
 export class TimesheetService {

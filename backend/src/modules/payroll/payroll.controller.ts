@@ -15,10 +15,10 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { PayPeriodService } from './pay-period.service';
-import { PayslipService } from './payslip.service';
-import { PayslipPdfService } from './payslip-pdf.service';
-import { PayslipExportService } from './payslip-export.service';
+import { PayPeriodService } from './providers/pay-period.service';
+import { PayslipService } from './providers/payslip.service';
+import { PayslipPdfService } from './providers/payslip-pdf.service';
+import { PayslipExportService } from './providers/payslip-export.service';
 import { CreatePayPeriodDto } from './dtos/create-pay-period.dto';
 import { GeneratePayslipsDto } from './dtos/generate-payslips.dto';
 

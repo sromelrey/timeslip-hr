@@ -10,10 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import { EmployeeService } from './employee.service';
+import { EmployeeService } from './providers/employee.service';
 import { CreateEmployeeDto, UpdateEmployeeDto, CreateCompensationDto } from './dtos';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { EmployeeCompensationService } from './employee-compensation.service';
+import { EmployeeCompensationService } from './providers/employee-compensation.service';
 
 @ApiTags('Employees')
 @Controller('employees')

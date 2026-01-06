@@ -2,19 +2,26 @@
 
 import { useAuth } from "@/hooks/auth";
 import { useDashboardStats } from "@/hooks/use-dashboard-stats";
+import { useDashboardRefresh } from "@/hooks/use-dashboard-refresh";
 import { 
   Users, 
   Clock, 
   Calendar, 
   TrendingUp,
-  RefreshCw
+  RefreshCw,
+  UserCheck,
+  Coffee
 } from "lucide-react";
 import { StatCard } from "@/components/admin/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
+import { RecentActivityFeed } from "@/components/admin/dashboard/recent-activity-feed";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { stats, loading, error, refetch } = useDashboardStats();
+
+  // Auto-refresh every 5 minutes
+  useDashboardRefresh(refetch);
 
   if (loading && !stats) {
     return (
@@ -71,13 +78,27 @@ export default function DashboardPage() {
       color: "text-purple-500", 
       bg: "bg-purple-50" 
     },
+    {
+      name: "Currently Clocked In",
+      value: stats?.currentlyClockedIn || 0,
+      icon: UserCheck,
+      color: "text-teal-500",
+      bg: "bg-teal-50"
+    },
+    {
+      name: "On Break",
+      value: stats?.onBreak || 0,
+      icon: Coffee,
+      color: "text-amber-500",
+      bg: "bg-amber-50"
+    },
   ];
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          < h1 className="text-2xl font-bold tracking-tight">
             Welcome back, {user?.firstName || user?.name || 'Admin'}
           </h1>
           <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your team today.</p>
@@ -93,7 +114,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {statCards.map((stat) => (
           <StatCard key={stat.name} {...stat} />
         ))}
@@ -106,11 +127,9 @@ export default function DashboardPage() {
             <p className="text-muted-foreground italic">Chart visualization coming soon</p>
           </div>
         </div>
-        <div className="p-6 bg-card border border-border rounded-xl shadow-sm h-64">
+        <div className="p-6 bg-card border border-border rounded-xl shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-          <div className="flex items-center justify-center h-40">
-            <p className="text-muted-foreground italic">Activity feed coming soon</p>
-          </div>
+          <RecentActivityFeed activities={stats?.recentActivity || []} />
         </div>
       </div>
     </div>

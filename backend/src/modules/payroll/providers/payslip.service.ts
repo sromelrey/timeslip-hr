@@ -8,7 +8,7 @@ import { Employee } from '@/entities/employee.entity';
 import { PayslipStatus, PayslipItemType } from '@/types/enums';
 import { PayrollService } from './payroll.service';
 import { DeductionService } from './deduction.service';
-import { GeneratePayslipsDto } from './dtos/generate-payslips.dto';
+import { GeneratePayslipsDto } from '../dtos/generate-payslips.dto';
 
 @Injectable()
 export class PayslipService {

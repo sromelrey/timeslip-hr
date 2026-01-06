@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TimeEvent } from '@/entities/time-event.entity';
 import { Employee } from '@/entities/employee.entity';
-import { TimeEventService } from './time-event.service';
+import { TimeEventService } from './providers/time-event.service';
 import { TimeEventController } from './time-event.controller';
 
 @Module({

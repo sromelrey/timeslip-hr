@@ -8,6 +8,7 @@ import { TimeEventModule } from './modules/time-event/time-event.module';
 import { TimesheetModule } from './modules/timesheet/timesheet.module';
 import { PayrollModule } from './modules/payroll/payroll.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     TimesheetModule,
     PayrollModule,
     DashboardModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}

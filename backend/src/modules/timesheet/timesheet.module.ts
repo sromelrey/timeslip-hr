@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TimesheetController } from './timesheet.controller';
-import { TimesheetService } from './timesheet.service';
+import { TimesheetService } from './providers/timesheet.service';
 import { Timesheet } from '../../entities/timesheet.entity';
 import { TimesheetDay } from '../../entities/timesheet-day.entity';
 import { TimesheetAdjustment } from '../../entities/timesheet-adjustment.entity';

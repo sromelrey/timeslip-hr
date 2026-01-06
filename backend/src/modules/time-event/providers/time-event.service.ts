@@ -5,7 +5,7 @@ import * as argon2 from 'argon2';
 import { TimeEvent } from '@/entities/time-event.entity';
 import { Employee } from '@/entities/employee.entity';
 import { TimeEventType } from '@/types/enums';
-import { CreateTimeEventDto } from './dtos';
+import { CreateTimeEventDto } from '../dtos';
 
 @Injectable()
 export class TimeEventService {

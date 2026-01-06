@@ -5,7 +5,7 @@ import * as argon2 from 'argon2';
 import { Employee } from '@/entities/employee.entity';
 import { EmployeeCompensation } from '@/entities/employee-compensation.entity';
 import { CompensationType } from '@/types/enums';
-import { CreateEmployeeDto, UpdateEmployeeDto } from './dtos';
+import { CreateEmployeeDto, UpdateEmployeeDto } from '../dtos';
 
 @Injectable()
 export class EmployeeService {

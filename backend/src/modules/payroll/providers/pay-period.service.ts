@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PayPeriod } from '@/entities/pay-period.entity';
-import { CreatePayPeriodDto } from './dtos/create-pay-period.dto';
+import { CreatePayPeriodDto } from '../dtos/create-pay-period.dto';
 import { PayPeriodStatus } from '@/types/enums';
 
 @Injectable()
