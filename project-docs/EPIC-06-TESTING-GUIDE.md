@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 # Epic 6: Admin Dashboard and Reporting - Testing Guide
 
 Use this guide to verify the **Enhanced Admin Dashboard** and **Reports & Exports** features.
+=======
+# Epic 6: Dynamic Admin Dashboard - Testing Guide
+
+Use this guide to verify the **Dynamic Admin Dashboard** feature.
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 
 ## 🏁 Prerequisites
 
@@ -34,15 +40,24 @@ You need:
 - **Action**: Login as admin, navigate to `/admin/dashboard`.
 - **Expected**: 
   - Dashboard loads without errors
+<<<<<<< HEAD
   - Six stat cards display:
+=======
+  - Four stat cards display:
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
     - ✅ **Total Employees**: Shows count of active employees
     - ✅ **Attendance Today**: Shows percentage (e.g., "85%")
     - ✅ **Pending Approvals**: Shows count of pending timesheets + payslips
     - ✅ **Present Today**: Shows ratio (e.g., "17/20")
+<<<<<<< HEAD
     - ✅ **Currently Clocked In**: Shows count of employees with active status
     - ✅ **On Break**: Shows count of employees currently on break
   - Loading indicator should appear briefly
   - Recent activity feed shows last 10 time events
+=======
+  - Loading indicator should appear briefly
+  - Two placeholder sections for future charts/activity feed
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 
 #### 1.2 Verify Total Employees Count
 - **Action**: Query database: `SELECT COUNT(*) FROM employees WHERE is_active = true AND company_id = 1;`
@@ -66,6 +81,7 @@ You need:
 - **Expected**: 
   - Dashboard "Pending Approvals" matches database total
 
+<<<<<<< HEAD
 #### 1.5 Verify Currently Clocked In
 - **Action**: 
   1. Query currently clocked in employees:
@@ -121,6 +137,8 @@ You need:
   - Events are ordered by most recent first
   - New event appears at the top after refresh
 
+=======
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 ---
 
 ### Feature 2: Refresh Functionality
@@ -142,6 +160,7 @@ You need:
 
 ---
 
+<<<<<<< HEAD
 ### Feature 3: Frontend Dashboard UI
 
 #### 3.1 Verify New Stat Cards Display
@@ -358,6 +377,9 @@ You need:
 ## Updated Testing Checklist
 
 ### Backend Features
+=======
+### Feature 3: Loading States
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 
 #### 3.1 Initial Loading
 - **Action**: 
@@ -504,12 +526,18 @@ WHERE te.event_type = 'CLOCK_IN'
 
 | Check | How to Verify |
 |-------|---------------|
+<<<<<<< HEAD
 | **Stats Display Correctly** | All 6 cards show numeric values, not "undefined" or "0" |
 | **Attendance % Accurate** | Matches manual calculation from database |
 | **Pending Count Correct** | Sum of pending timesheets + payslips |
 | **Currently Clocked In Accurate** | Matches employees with CLOCK_IN but no CLOCK_OUT today |
 | **On Break Count Accurate** | Matches employees with BREAK_IN but no BREAK_OUT today |
 | **Recent Activity Updates** | Shows last 10 events, updates on refresh |
+=======
+| **Stats Display Correctly** | All 4 cards show numeric values, not "undefined" or "0" |
+| **Attendance % Accurate** | Matches manual calculation from database |
+| **Pending Count Correct** | Sum of pending timesheets + payslips |
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 | **Refresh Button Works** | Clicking button fetches fresh data |
 | **Loading State Shows** | Spinner appears during initial load |
 | **Error Handling Works** | Graceful error message when backend offline |
@@ -520,21 +548,32 @@ WHERE te.event_type = 'CLOCK_IN'
 
 ## ✅ Test Checklist
 
+<<<<<<< HEAD
 - [ ] Dashboard loads successfully with all 6 stat cards
+=======
+- [ ] Dashboard loads successfully with all stat cards
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 - [ ] Total Employees count matches database
 - [ ] Attendance Today percentage is accurate
 - [ ] Pending Approvals count is correct
 - [ ] Present Today shows correct ratio
+<<<<<<< HEAD
 - [ ] Currently Clocked In count is accurate
 - [ ] On Break count is accurate
 - [ ] Recent Activity feed displays last 10 events
 - [ ] Recent Activity updates on refresh
+=======
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 - [ ] Refresh button updates stats
 - [ ] Loading state appears on initial load
 - [ ] Error state displays when backend is offline
 - [ ] Retry button recovers from errors
+<<<<<<< HEAD
 - [ ] API endpoint `/dashboard/stats` returns valid JSON with new fields
 - [ ] API endpoint `/dashboard/currently-active` returns employee details
+=======
+- [ ] API endpoint `/dashboard/stats` returns valid JSON
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 - [ ] Stats update when underlying data changes
 - [ ] Dashboard is responsive on all screen sizes
 - [ ] No console errors or warnings
@@ -552,6 +591,7 @@ WHERE te.event_type = 'CLOCK_IN'
 | Dashboard blank | Frontend not connected to backend | Check API_URL in frontend `.env.local` |
 | Stats not updating | Redux state not updating | Check browser Redux DevTools |
 | Loading forever | Backend not running | Start backend with `npm run start:dev` |
+<<<<<<< HEAD
 | Recent activity empty | No time events today | Create events via kiosk |
 | Currently clocked in is 0 | No active clock-ins | Clock in employees without clocking out |
 
@@ -725,6 +765,8 @@ Authorization: Bearer {{adminLogin.response.body.accessToken}}
 - [ ] CSV escaping works (commas, quotes in employee names)
 - [ ] Empty result sets return CSV with headers only
 - [ ] Large datasets (100+ rows) export successfully
+=======
+>>>>>>> 5ae84cd77ef04fa4014940b17a1fc78eac906025
 
 ---
 
