@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { TimesheetService } from './timesheet.service';
+import { TimesheetService } from './providers/timesheet.service';
 import { GenerateTimesheetDto } from './dtos/generate-timesheet.dto';
 import { UpdateTimesheetStatusDto } from './dtos/update-timesheet-status.dto';
 import { CreateAdjustmentDto } from './dtos/create-adjustment.dto';

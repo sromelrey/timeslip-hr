@@ -5,8 +5,9 @@ import { Employee } from '@/entities/employee.entity';
 import { TimeEvent } from '@/entities/time-event.entity';
 import { Timesheet } from '@/entities/timesheet.entity';
 import { Payslip } from '@/entities/payslip.entity';
-import { DashboardStats } from '@/types/dashboard.types';
+import { DashboardStats, RecentActivityItem } from '@/types/dashboard.types';
 import { TimesheetStatus, PayslipStatus, TimeEventType } from '@/types/enums';
+import { In } from 'typeorm';
 
 @Injectable()
 export class DashboardService {
@@ -67,6 +68,45 @@ export class DashboardService {
       },
     });
 
+    // Get current activity status
+    const latestEvents = await this.timeEventRepo
+      .createQueryBuilder('te')
+      .innerJoin(
+        qb => qb
+          .select('max(happened_at)', 'max_happened_at')
+          .addSelect('employee_id', 'inner_employee_id')
+          .from(TimeEvent, 'inner_te')
+          .groupBy('employee_id'),
+        'latest',
+        'te.employee_id = latest.inner_employee_id AND te.happened_at = latest.max_happened_at'
+      )
+      .leftJoinAndSelect('te.employee', 'employee')
+      .where('employee.companyId = :companyId', { companyId })
+      .getMany();
+
+    const currentlyClockedIn = latestEvents.filter(e => 
+      e.type === TimeEventType.CLOCK_IN || e.type === TimeEventType.BREAK_OUT
+    ).length;
+
+    const onBreak = latestEvents.filter(e => 
+      e.type === TimeEventType.BREAK_IN
+    ).length;
+
+    // Get recent activity
+    const recentEvents = await this.timeEventRepo.find({
+      where: { employee: { companyId } },
+      relations: ['employee'],
+      order: { happenedAt: 'DESC' },
+      take: 5,
+    });
+
+    const recentActivity: RecentActivityItem[] = recentEvents.map(event => ({
+      id: event.id,
+      employeeName: event.employee.firstName + ' ' + event.employee.lastName,
+      eventType: event.type,
+      timestamp: event.happenedAt,
+    }));
+
     return {
       totalEmployees,
       attendanceToday: {
@@ -78,6 +118,9 @@ export class DashboardService {
         timesheets: pendingTimesheets,
         payslips: pendingPayslips,
       },
+      currentlyClockedIn,
+      onBreak,
+      recentActivity,
     };
   }
 }

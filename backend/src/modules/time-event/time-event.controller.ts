@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { TimeEventService } from './time-event.service';
+import { TimeEventService } from './providers/time-event.service';
 import { CreateTimeEventDto } from './dtos';
 
 @ApiTags('Time Events')

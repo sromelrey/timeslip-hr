@@ -10,7 +10,7 @@ import {
   UseGuards 
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import { ProductService } from './product.service';
+import { ProductService } from './providers/product.service';
 import { CreateProductDto, UpdateProductDto } from './dtos';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
