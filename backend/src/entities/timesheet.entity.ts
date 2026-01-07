@@ -10,6 +10,8 @@ import { TimesheetStatus } from '@/types/enums';
 
 @Entity('timesheets')
 @Index(['employeeId', 'payPeriodId'], { unique: true, where: 'deleted_at IS NULL' })
+@Index(['employeeId']) // Performance: fast lookup by employee
+@Index(['payPeriodId']) // Performance: fast lookup by pay period
 export class Timesheet extends CommonEntity {
   @Column({ name: 'employee_id', type: 'int' })
   employeeId: number;

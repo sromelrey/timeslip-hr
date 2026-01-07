@@ -9,6 +9,8 @@ import { Employee } from '@/entities/employee.entity';
 import { TimeEvent } from '@/entities/time-event.entity';
 import { TimesheetStatus, TimeEventType, TimesheetAdjustmentField, TimesheetAdjustmentMode } from '@/types/enums';
 import { CreateAdjustmentDto } from '../dtos/create-adjustment.dto';
+import { AuditService } from '@/modules/audit/providers/audit.service';
+import { AuditAction } from '@/entities/audit-log.entity';
 
 @Injectable()
 export class TimesheetService {
@@ -25,6 +27,7 @@ export class TimesheetService {
     private readonly employeeRepo: Repository<Employee>,
     @InjectRepository(TimeEvent)
     private readonly timeEventRepo: Repository<TimeEvent>,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(companyId: number): Promise<Timesheet[]> {
@@ -232,6 +235,7 @@ export class TimesheetService {
    */
   async updateStatus(id: number, newStatus: TimesheetStatus, userId: number, companyId: number): Promise<Timesheet> {
     const timesheet = await this.findOne(id, companyId);
+    const oldStatus = timesheet.status;
 
     const now = new Date();
     switch (newStatus) {
@@ -250,7 +254,19 @@ export class TimesheetService {
     }
     timesheet.status = newStatus;
 
-    return this.timesheetRepo.save(timesheet);
+    const saved = await this.timesheetRepo.save(timesheet);
+
+    // Audit log
+    await this.auditService.log({
+      userId,
+      action: AuditAction.UPDATE,
+      entityType: 'Timesheet',
+      entityId: id,
+      description: `Updated timesheet status from ${oldStatus} to ${newStatus}`,
+      changes: { status: { old: oldStatus, new: newStatus } },
+    });
+
+    return saved;
   }
 
   /**

@@ -10,6 +10,7 @@ import { PayrollModule } from './modules/payroll/payroll.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { AuditModule } from './modules/audit/audit.module';
 
 @Module({
   imports: [
@@ -44,9 +45,9 @@ import { SettingsModule } from './modules/settings/settings.module';
     TimesheetModule,
     PayrollModule,
     DashboardModule,
-    DashboardModule,
     ReportsModule,
     SettingsModule,
+    AuditModule,
   ],
 })
 export class AppModule {}
