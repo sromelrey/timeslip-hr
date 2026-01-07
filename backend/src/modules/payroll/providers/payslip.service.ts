@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Payslip } from '@/entities/payslip.entity';
 import { PayslipItem } from '@/entities/payslip-item.entity';
 import { PayPeriod } from '@/entities/pay-period.entity';
@@ -9,6 +9,8 @@ import { PayslipStatus, PayslipItemType } from '@/types/enums';
 import { PayrollService } from './payroll.service';
 import { DeductionService } from './deduction.service';
 import { GeneratePayslipsDto } from '../dtos/generate-payslips.dto';
+import { AuditService } from '@/modules/audit/providers/audit.service';
+import { AuditAction } from '@/entities/audit-log.entity';
 
 @Injectable()
 export class PayslipService {
@@ -23,6 +25,8 @@ export class PayslipService {
     private readonly employeeRepo: Repository<Employee>,
     private readonly payrollService: PayrollService,
     private readonly deductionService: DeductionService,
+    private readonly dataSource: DataSource,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(companyId: number, payPeriodId?: number, employeeId?: number): Promise<Payslip[]> {
@@ -212,10 +216,23 @@ export class PayslipService {
       throw new BadRequestException('Cannot finalize a voided payslip');
     }
 
+    const oldStatus = payslip.status;
     payslip.status = PayslipStatus.FINALIZED;
     payslip.finalizedAt = new Date();
 
-    return this.payslipRepo.save(payslip);
+    const saved = await this.payslipRepo.save(payslip);
+
+    // Audit log
+    await this.auditService.log({
+      userId,
+      action: AuditAction.APPROVE,
+      entityType: 'Payslip',
+      entityId: id,
+      description: `Finalized payslip for employee #${payslip.employeeId}`,
+      changes: { status: { old: oldStatus, new: PayslipStatus.FINALIZED } },
+    });
+
+    return saved;
   }
 
   async void(id: number, userId: number, companyId: number): Promise<Payslip> {
@@ -225,10 +242,23 @@ export class PayslipService {
       throw new BadRequestException('Payslip is already voided');
     }
 
+    const oldStatus = payslip.status;
     payslip.status = PayslipStatus.VOID;
     payslip.voidedAt = new Date();
     payslip.voidedByUserId = userId;
 
-    return this.payslipRepo.save(payslip);
+    const saved = await this.payslipRepo.save(payslip);
+
+    // Audit log
+    await this.auditService.log({
+      userId,
+      action: AuditAction.DELETE,
+      entityType: 'Payslip',
+      entityId: id,
+      description: `Voided payslip for employee #${payslip.employeeId}`,
+      changes: { status: { old: oldStatus, new: PayslipStatus.VOID } },
+    });
+
+    return saved;
   }
 }
