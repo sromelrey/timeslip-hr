@@ -1,20 +1,41 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { submitTimeEvent, fetchEmployeeStatus, fetchRecentEvents, clearError } from "@/store/core/slices/time-event-slice";
+import {
+  submitTimeEvent,
+  fetchEmployeeStatus,
+  fetchRecentEvents,
+  clearError,
+} from "@/store/core/slices/time-event-slice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { LogIn, LogOut, Coffee, CoffeeIcon, AlertCircle } from "lucide-react";
+import {
+  LogIn,
+  LogOut,
+  Coffee,
+  CoffeeIcon,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import { TimeEventType, TimeEventSource } from "@/lib/enums";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RootState } from "@/store";
+import {
+  createSuccessMessage,
+  getButtonTooltip,
+  getStatusDescription,
+} from "@/hooks/use-time-confirmation";
 
 const TimeEntryForm = () => {
   const [employeeNo, setEmployeeNo] = useState("");
   const [pin, setPin] = useState("");
   const dispatch = useAppDispatch();
-  const { currentStatus, loading, error } = useAppSelector((state: RootState) => state.timeEvent);
+  const { currentStatus, loading, error } = useAppSelector(
+    (state: RootState) => state.timeEvent
+  );
 
   useEffect(() => {
     if (employeeNo.length >= 7) {
@@ -26,16 +47,16 @@ const TimeEntryForm = () => {
   const handleAction = async (type: TimeEventType) => {
     if (!employeeNo.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter your Employee Number",
+        title: "Employee Number Required",
+        description: "Please enter your Employee Number to continue.",
         variant: "destructive",
       });
       return;
     }
     if (pin && pin.length < 4) {
       toast({
-        title: "Error",
-        description: "PIN must be at least 4 characters",
+        title: "Invalid PIN",
+        description: "PIN must be at least 4 digits. Please try again.",
         variant: "destructive",
       });
       return;
@@ -50,12 +71,19 @@ const TimeEntryForm = () => {
     };
 
     const resultAction = await dispatch(submitTimeEvent(payload));
-    
+
     if (submitTimeEvent.fulfilled.match(resultAction)) {
       setPin(""); // Clear PIN on success
+      const successMessage = createSuccessMessage(type, new Date());
       toast({
-        title: "Success",
-        description: `${type.replace("_", " ")} recorded successfully.`,
+        title: (
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <span>Success!</span>
+          </div>
+        ) as unknown as string,
+        description: successMessage,
+        className: "border-green-500/50 bg-green-50 dark:bg-green-950/20",
       });
       // Refresh status and history
       dispatch(fetchEmployeeStatus(employeeNo));
@@ -65,9 +93,9 @@ const TimeEntryForm = () => {
 
   const isButtonEnabled = (type: TimeEventType) => {
     if (!currentStatus) return type === TimeEventType.CLOCK_IN;
-    
+
     switch (currentStatus) {
-      case 'CLOCKED_OUT':
+      case "CLOCKED_OUT":
         return type === TimeEventType.CLOCK_IN;
       case TimeEventType.CLOCK_IN:
       case TimeEventType.BREAK_OUT:
@@ -80,10 +108,30 @@ const TimeEntryForm = () => {
   };
 
   const actionButtons = [
-    { type: TimeEventType.CLOCK_IN, label: "Clock In", icon: LogIn, colorClass: "bg-time-in hover:bg-time-in/90" },
-    { type: TimeEventType.CLOCK_OUT, label: "Clock Out", icon: LogOut, colorClass: "bg-time-out hover:bg-time-out/90" },
-    { type: TimeEventType.BREAK_IN, label: "Break In", icon: Coffee, colorClass: "bg-break-in hover:bg-break-in/90" },
-    { type: TimeEventType.BREAK_OUT, label: "Break Out", icon: CoffeeIcon, colorClass: "bg-break-out hover:bg-break-out/90" },
+    {
+      type: TimeEventType.CLOCK_IN,
+      label: "Clock In",
+      icon: LogIn,
+      colorClass: "bg-time-in hover:bg-time-in/90",
+    },
+    {
+      type: TimeEventType.CLOCK_OUT,
+      label: "Clock Out",
+      icon: LogOut,
+      colorClass: "bg-time-out hover:bg-time-out/90",
+    },
+    {
+      type: TimeEventType.BREAK_IN,
+      label: "Break In",
+      icon: Coffee,
+      colorClass: "bg-break-in hover:bg-break-in/90",
+    },
+    {
+      type: TimeEventType.BREAK_OUT,
+      label: "Break Out",
+      icon: CoffeeIcon,
+      colorClass: "bg-break-out hover:bg-break-out/90",
+    },
   ];
 
   return (
@@ -91,20 +139,36 @@ const TimeEntryForm = () => {
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <AlertTitle>Unable to Complete Action</AlertTitle>
+          <AlertDescription className="mt-1">
+            {error}
+            <br />
+            <span className="text-sm opacity-80">
+              If this problem persists, please contact your administrator.
+            </span>
+          </AlertDescription>
+          <Button
+            variant="ghost"
+            size="sm"
             className="mt-2 h-auto p-0 underline"
             onClick={() => {
               dispatch(clearError());
               setEmployeeNo("");
             }}
           >
-            Dismiss
+            Dismiss and try again
           </Button>
         </Alert>
+      )}
+
+      {/* Current Status Display */}
+      {employeeNo.length >= 7 && currentStatus && (
+        <div className="rounded-lg border bg-muted/50 px-4 py-3">
+          <p className="text-sm text-muted-foreground">Current Status</p>
+          <p className="text-lg font-semibold">
+            {getStatusDescription(currentStatus)}
+          </p>
+        </div>
       )}
 
       <div className="space-y-4">
@@ -137,17 +201,30 @@ const TimeEntryForm = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {actionButtons.map(({ type, label, icon: Icon, colorClass }) => (
-          <Button
-            key={type}
-            onClick={() => handleAction(type)}
-            disabled={loading || !isButtonEnabled(type)}
-            className={`h-20 text-lg font-bold flex flex-col gap-1 ${colorClass} text-white transition-all transform active:scale-95 disabled:opacity-30`}
-          >
-            <Icon className="w-6 h-6" />
-            {label}
-          </Button>
-        ))}
+        {actionButtons.map(({ type, label, icon: Icon, colorClass }) => {
+          const enabled = isButtonEnabled(type);
+          const tooltip = getButtonTooltip(type, enabled, currentStatus);
+
+          return (
+            <div key={type} className="relative group">
+              <Button
+                onClick={() => handleAction(type)}
+                disabled={loading || !enabled}
+                className={`w-full h-20 text-lg font-bold flex flex-col gap-1 ${colorClass} text-white transition-all transform active:scale-95 disabled:opacity-30`}
+                title={tooltip}
+              >
+                <Icon className="w-6 h-6" />
+                {label}
+              </Button>
+              {/* Tooltip for disabled buttons */}
+              {!enabled && tooltip && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-48 text-center border">
+                  {tooltip}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

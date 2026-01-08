@@ -1,5 +1,6 @@
-import { PayrollService, PayrollCalculationResult } from './payroll.service';
-import { CompensationType } from '@/types/enums';
+/**
+ * Unit tests for PayrollService pay calculation logic.
+ */
 
 /**
  * Unit tests for PayrollService pay calculation logic.

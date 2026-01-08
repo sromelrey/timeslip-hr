@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsEnum, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateSettingsDto {
