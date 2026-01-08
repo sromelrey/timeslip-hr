@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TimesheetService } from './timesheet.service';
 import { TimeEventType } from '@/types/enums';
 import { TimeEvent } from '@/entities/time-event.entity';
@@ -10,14 +11,16 @@ describe('TimesheetService', () => {
   let service: TimesheetService;
 
   beforeEach(() => {
-    // Create a partial mock of the service to test private method via casting
+    // Create a partial mock of the service to test calculateDayHours private method
+    // We use 'as any' casting because we're mocking the repository dependencies
     service = new (TimesheetService as any)(
-      {} as any, // timesheetRepo
-      {} as any, // timesheetDayRepo
-      {} as any, // timesheetAdjustmentRepo
-      {} as any, // payPeriodRepo
-      {} as any, // employeeRepo
-      {} as any, // timeEventRepo
+      {}, // timesheetRepo
+      {}, // timesheetDayRepo
+      {}, // timesheetAdjustmentRepo
+      {}, // payPeriodRepo
+      {}, // employeeRepo
+      {}, // timeEventRepo
+      {}, // auditService
     );
   });
 
