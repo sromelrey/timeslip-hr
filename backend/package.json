@@ -16,6 +16,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "migrate": "npx typeorm-ts-node-commonjs migration:run -d migration-data-source.ts",
+    "add-indexes": "ts-node -r tsconfig-paths/register src/database/add-indexes.ts",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seeder.ts",
     "schema:drop": "ts-node -r tsconfig-paths/register src/database/drop-schema.ts",
     "db:reset": "npm run schema:drop && npm run seed"
