@@ -173,3 +173,63 @@ export const getPayPeriods = async (token: string): Promise<PayPeriod[]> => {
 4. **Environment Variables**: Always use `NEXT_PUBLIC_` prefix for variables needed on the client.
 5. **Custom Hooks**: Extract complex logic into custom hooks to keep JSX clean and testable.
 6. **Component Size**: If a component exceeds 150 lines, consider splitting it into smaller components or extracting logic into hooks.
+
+## Testing Standards
+
+We use **Jest** and **React Testing Library (RTL)** to ensure application stability and correctness.
+
+### Core Principles
+- **Test Behavior, Not Implementation**: Focus on what the user sees and interacts with, not internal state or private methods.
+- **Critical Paths**: Prioritize testing complex logic, authentication flows, and critical user journeys (e.g., Timesheet submission).
+- **Isolation**: Unit tests should be isolated; integration tests can mock network requests.
+
+### 1. Unit Testing
+- **Hooks**: Test custom hooks in isolation using `renderHook` from RTL.
+- **Utilities**: Test helper functions in `lib/utils.ts` to ensure edge case handling.
+
+**Naming Convention**: `*.test.ts` or `*.test.tsx` located in `__tests__` directory alongside the feature.
+
+**Example (Hook Test):**
+```typescript
+// hooks/__tests__/use-time-actions.test.ts
+import { renderHook, act } from '@testing-library/react';
+import { useTimeActions } from '../use-time-actions';
+
+test('should handle clock in successfully', async () => {
+  const { result } = renderHook(() => useTimeActions());
+  
+  await act(async () => {
+    await result.current.clockIn();
+  });
+  
+  expect(result.current.status).toBe('CLOCKED_IN');
+});
+```
+
+### 2. Component Testing
+- **Interactive Components**: Test forms, modals, and complex UI elements.
+- **Accessibility**: Use `getByRole`, `getByLabelText`, etc., to enforce accessible HTML.
+- **Mocking**: Mock child components if they are heavy or irrelevant to the parent's test logic.
+
+**Example (Component Test):**
+```tsx
+// components/kiosk/__tests__/action-buttons.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ActionButtons } from '../action-buttons';
+
+test('calls onClockIn when button is clicked', () => {
+  const mockFn = jest.fn();
+  render(<ActionButtons onClockIn={mockFn} />);
+  
+  fireEvent.click(screen.getByRole('button', { name: /clock in/i }));
+  expect(mockFn).toHaveBeenCalledTimes(1);
+});
+```
+
+### 3. Integration Testing
+- Test the interaction between parent components and Redux store.
+- Mock API responses using Jest or MSW (Mock Service Worker).
+
+### 4. Code Coverage
+- Aim for high coverage on **utility functions** and **business logic hooks**.
+- UI Coverage is less critical but ensure no "crash on render" scenarios.
