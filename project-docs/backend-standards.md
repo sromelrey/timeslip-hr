@@ -114,3 +114,70 @@ All shared TypeScript definitions must be located in the `src/types` directory:
 3.  **DTOs**: Never return entities directly from controllers; use DTOs or serialization.
 4.  **Lean Controllers**: Controllers should only handle routing and validation; all business logic belongs in services.
 5.  **Type Safety**: Avoid `any`. Leverage TypeScript's type system for all data structures.
+
+## Testing Standards
+
+We use **Jest** (default in NestJS) for all backend testing logic.
+
+### Core Principles
+- **Fast Feedback**: Unit tests should run instantly.
+- **Mock External Dependencies**: Services connecting to databases or external APIs should be mocked in unit tests.
+- **E2E Reliability**: E2E tests should use real database connections (test containers or test DB) to ensure SQL correctness.
+
+### 1. Unit Testing
+- **Scope**: Services, Pipes, Guards, and Utilities.
+- **Mocking**: Use `jest.spyOn` or standard custom providers for repository mocking.
+
+**Naming Convention**: `*.spec.ts` located alongside the source file.
+
+**Example (Service Test):**
+```typescript
+// modules/time-event/providers/time-event.service.spec.ts
+describe('TimeEventService', () => {
+  let service: TimeEventService;
+  let repo: Repository<TimeEvent>;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        TimeEventService,
+        { provide: getRepositoryToken(TimeEvent), useValue: mockRepo }
+      ],
+    }).compile();
+
+    service = module.get(TimeEventService);
+  });
+
+  it('should create event successfully', async () => {
+    const result = await service.create(mockDto);
+    expect(result).toBeDefined();
+  });
+});
+```
+
+### 2. Integration Testing
+- **Scope**: Controllers + Services working together.
+- **Mocking**: Mock only the database layer or specific external services.
+
+### 3. End-to-End (E2E) Testing
+- **Scope**: Full request lifecycle from Middleware → Guard → Controller → Service → Database.
+- **Location**: `test/` directory at the project root.
+- **Naming**: `*.e2e-spec.ts`.
+
+**Example (E2E Test):**
+```typescript
+// test/auth.e2e-spec.ts
+it('/auth/login (POST)', () => {
+  return request(app.getHttpServer())
+    .post('/auth/login')
+    .send({ email: 'admin@example.com', password: 'password' })
+    .expect(201)
+    .expect(res => {
+      expect(res.body.accessToken).toBeDefined();
+    });
+});
+```
+
+### 4. Code Coverage
+- **Business Logic**: 100% coverage on critical services (Payroll, TimeEvent state machine).
+- **Controllers**: Ensure decorators and basic validation paths are covered.

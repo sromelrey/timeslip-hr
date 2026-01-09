@@ -356,4 +356,156 @@ When reporting test failures, include:
 
 ---
 
+## Appendix A: SQL Verification Queries
+
+Use these queries to manually verify data in the database:
+
+```sql
+-- Check total active employees
+SELECT COUNT(*) as total_employees
+FROM employees 
+WHERE is_active = true 
+  AND company_id = 1;
+
+-- Check attendance today (unique clock-ins)
+SELECT COUNT(DISTINCT employee_id) as present_today
+FROM time_events 
+WHERE type = 'CLOCK_IN'
+  AND DATE(happened_at) = CURRENT_DATE;
+
+-- Check pending timesheet approvals
+SELECT COUNT(*) as pending_timesheets
+FROM timesheets t
+JOIN employees e ON t.employee_id = e.id
+WHERE t.status IN ('DRAFT', 'REVIEWED');
+
+-- Check pending payslip approvals
+SELECT COUNT(*) as pending_payslips
+FROM payslips p
+WHERE p.status = 'DRAFT';
+
+-- Verify payslips with calculations
+SELECT 
+  id,
+  gross_pay,
+  total_deductions,
+  net_pay,
+  (gross_pay - total_deductions) as calculated_net_pay,
+  CASE 
+    WHEN net_pay = (gross_pay - total_deductions) THEN '✅ Correct'
+    ELSE '❌ Mismatch'
+  END as validation
+FROM payslips;
+
+-- Check deductions for an employee
+SELECT d.*, e.first_name, e.last_name
+FROM deductions d
+JOIN employees e ON d.employee_id = e.id
+WHERE d.deleted_at IS NULL
+ORDER BY d.created_at DESC;
+```
+
+---
+
+## Appendix B: API Testing Examples
+
+Use these with httpyac, REST Client, or Postman:
+
+```http
+### Variables
+@baseUrl = http://localhost:3001
+@token = YOUR_JWT_TOKEN
+
+### ============== Authentication ==============
+
+### Admin Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### ============== Dashboard ==============
+
+### Get Dashboard Stats
+GET {{baseUrl}}/dashboard/stats
+Authorization: Bearer {{token}}
+
+### ============== Payroll ==============
+
+### Get Pay Periods
+GET {{baseUrl}}/payroll/pay-periods
+Authorization: Bearer {{token}}
+
+### Generate Payslips
+POST {{baseUrl}}/payroll/payslips/generate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "payPeriodId": 1
+}
+
+### Download Payslip PDF
+GET {{baseUrl}}/payroll/payslips/1/pdf
+Authorization: Bearer {{token}}
+
+### ============== Deductions ==============
+
+### Create Fixed Deduction
+POST {{baseUrl}}/payroll/deductions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "employeeId": 1,
+  "type": "SSS",
+  "label": "SSS Contribution",
+  "calculationType": "FIXED",
+  "amount": 500
+}
+
+### Create Percentage Deduction
+POST {{baseUrl}}/payroll/deductions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "employeeId": 1,
+  "type": "TAX",
+  "label": "Withholding Tax (5%)",
+  "calculationType": "PERCENTAGE",
+  "amount": 5
+}
+
+### ============== Reports ==============
+
+### Export Timesheets
+POST {{baseUrl}}/reports/timesheet-export
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-31",
+  "sortBy": "employeeName",
+  "sortOrder": "asc"
+}
+
+### Generate Attendance Summary
+POST {{baseUrl}}/reports/attendance-summary
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-07",
+  "includeAnomalies": true
+}
+```
+
+---
+
 *Last Updated: January 2026*
