@@ -25,7 +25,7 @@ This document contains a comprehensive database schema for a full-featured HRIS 
 ## DBML Schema
 
 ```dbml
-title ERD FULL HRIS
+title ERD FULL HRIS (Tier + Module Access Fixed)
 // =====================================================
 // CORE HR MODULE
 // =====================================================
@@ -44,11 +44,73 @@ companies [icon: building, color: teal] {
   country string
   phone string
   email string
+
+  // === Tier Management (EPIC-20) ===
+  tier enum                           // FREE | BASIC | PRO | ENTERPRISE
+  tierLimits jsonb                    // { maxEmployees, maxAdmins, maxKioskSessions, dataRetentionMonths }
+  usage jsonb                         // { employeeCount, adminCount, activeKioskSessions, oldestDataDate }
+  billingEmail string                 // for invoices and notifications
+  subscriptionStatus enum             // TRIAL | ACTIVE | SUSPENDED | CANCELLED
+  trialEndsAt timestamp               // null if not on trial
+
   isActive boolean
   createdAt timestamp
   updatedAt timestamp
   deletedAt timestamp
 }
+
+// =====================================================
+// FEATURES + TIER GATING (NEW / UPDATED)
+// =====================================================
+
+features [icon: grid, color: teal] {
+  id int pk
+  code string                       // e.g., "TIME_ATTENDANCE", "PAYROLL", "LEAVE_MANAGEMENT"
+  name string                       // human readable
+  moduleCategory string             // CORE | PREMIUM | ENTERPRISE
+  description text
+  isActive boolean
+  createdAt timestamp
+  updatedAt timestamp
+  deletedAt timestamp
+}
+
+tier_features [icon: grid, color: teal] {
+  id int pk
+  tier enum                         // FREE | BASIC | PRO | ENTERPRISE
+  featureId int
+  isEnabled boolean                 // included in this tier by default
+  createdAt timestamp
+  updatedAt timestamp
+  deletedAt timestamp
+}
+
+company_features [icon: toggle-right, color: teal] {
+  id int pk
+  companyId int
+  featureId int
+
+  // overrides tier defaults (e.g., add-on purchases, trial unlocks, admin override)
+  isEnabled boolean
+
+  source enum                       // TIER_OVERRIDE | ADDON | TRIAL | ADMIN_OVERRIDE
+  effectiveFrom timestamp
+  effectiveTo timestamp
+
+  createdByUserId int
+  createdAt timestamp
+  updatedAt timestamp
+  deletedAt timestamp
+}
+
+Note: Effective feature enablement should be computed like:
+- Start with tier_features for companies.tier
+- Override with company_features if present (and active within effectiveFrom/effectiveTo)
+
+
+// =====================================================
+// CORE HR CONT...
+// =====================================================
 
 branches [icon: map-pin, color: teal] {
   id int pk
@@ -69,11 +131,11 @@ branches [icon: map-pin, color: teal] {
 departments [icon: layers, color: cyan] {
   id int pk
   companyId int
-  parentDepartmentId int  // for hierarchy
+  parentDepartmentId int
   name string
   code string
   costCenter string
-  managerId int           // employee who manages this dept
+  managerId int
   isActive boolean
   createdAt timestamp
   updatedAt timestamp
@@ -86,7 +148,7 @@ positions [icon: briefcase, color: cyan] {
   departmentId int
   title string
   code string
-  level int              // 1=Entry, 2=Mid, 3=Senior, 4=Manager, etc.
+  level int
   salaryGradeId int
   description text
   requirements text
@@ -131,7 +193,7 @@ user_sessions [icon: smartphone, color: blue] {
   userId int
   companyId int
 
-  refreshTokenHash string       // hash(token), not the token itself
+  refreshTokenHash string
   sessionStatus enum            // ACTIVE | REVOKED | EXPIRED
   expiresAt timestamp
   revokedAt timestamp
@@ -153,15 +215,15 @@ employees [icon: id-card, color: indigo] {
   branchId int
   departmentId int
   positionId int
-  reportingManagerId int  // self-referential
+  reportingManagerId int
   employeeNumber string
   firstName string
   middleName string
   lastName string
   preferredName string
-  gender enum            // MALE | FEMALE | OTHER | PREFER_NOT_TO_SAY
+  gender enum
   dateOfBirth date
-  maritalStatus enum     // SINGLE | MARRIED | DIVORCED | WIDOWED
+  maritalStatus enum
   nationality string
   email string
   personalEmail string
@@ -172,8 +234,8 @@ employees [icon: id-card, color: indigo] {
   currentAddress text
   permanentAddress text
   photoUrl string
-  employmentType enum    // FULL_TIME | PART_TIME | CONTRACT | INTERN
-  employmentStatus enum  // ACTIVE | ON_LEAVE | SUSPENDED | TERMINATED
+  employmentType enum
+  employmentStatus enum
   pinHash string
   hiredAt date
   probationEndDate date
@@ -192,7 +254,7 @@ employees [icon: id-card, color: indigo] {
 salary_grades [icon: trending-up, color: green] {
   id int pk
   companyId int
-  name string           // e.g., "Grade A", "Level 5"
+  name string
   minSalary decimal
   maxSalary decimal
   currency string
@@ -205,7 +267,7 @@ salary_grades [icon: trending-up, color: green] {
 employee_compensation [icon: dollar-sign, color: green] {
   id int pk
   employeeId int
-  compensationType enum  // HOURLY | DAILY | MONTHLY | ANNUAL
+  compensationType enum
   hourlyRate decimal
   dailyRate decimal
   monthlySalary decimal
@@ -213,7 +275,7 @@ employee_compensation [icon: dollar-sign, color: green] {
   currency string
   effectiveFrom date
   effectiveTo date
-  reason string          // e.g., "Annual Review", "Promotion"
+  reason string
   approvedByUserId int
   createdAt timestamp
   updatedAt timestamp
@@ -223,10 +285,10 @@ employee_compensation [icon: dollar-sign, color: green] {
 allowances [icon: plus-circle, color: green] {
   id int pk
   employeeId int
-  type enum              // TRANSPORT | MEAL | HOUSING | PHONE | OTHER
+  type enum
   label string
   amount decimal
-  frequency enum         // MONTHLY | YEARLY | PER_PAYROLL
+  frequency enum
   taxable boolean
   effectiveFrom date
   effectiveTo date
@@ -243,13 +305,10 @@ allowances [icon: plus-circle, color: green] {
 shift_patterns [icon: repeat, color: green] {
   id int pk
   companyId int
-  name string              // e.g., "Morning Shift", "Night Shift"
+  name string
   startTime time
   endTime time
   breakDurationMinutes int
-
-  // workDaysJson text      // ❌ removed (normalized)
-
   isOvernight boolean
   isActive boolean
   createdAt timestamp
@@ -280,15 +339,15 @@ schedules [icon: calendar, color: green] {
 time_events [icon: clock, color: green] {
   id int pk
   employeeId int
-  type enum               // CLOCK_IN | CLOCK_OUT | BREAK_IN | BREAK_OUT
+  type enum
   happenedAt timestamp
-  source enum             // KIOSK | WEB | MOBILE | BIOMETRIC | MANUAL
-  requestId string        // idempotency key
+  source enum
+  requestId string
   deviceId string
   ipAddress string
   latitude decimal
   longitude decimal
-  photoUrl string         // selfie for verification
+  photoUrl string
   createdByUserId int
   metaJson text
   createdAt timestamp
@@ -304,7 +363,7 @@ timesheets [icon: clipboard, color: purple] {
   id int pk
   employeeId int
   payPeriodId int
-  status enum             // DRAFT | SUBMITTED | REVIEWED | APPROVED | REJECTED | LOCKED
+  status enum
   totalRegularMinutes int
   totalOvertimeMinutes int
   totalBreakMinutes int
@@ -338,7 +397,7 @@ timesheet_days [icon: calendar-days, color: purple] {
   overtimeMinutes int
   lateMinutes int
   undertimeMinutes int
-  status enum             // PRESENT | ABSENT | HALF_DAY | ON_LEAVE | HOLIDAY
+  status enum
   anomaliesJson text
   createdAt timestamp
   updatedAt timestamp
@@ -348,8 +407,8 @@ timesheet_days [icon: calendar-days, color: purple] {
 timesheet_anomalies [icon: alert-triangle, color: red] {
   id int pk
   timesheetDayId int
-  code string             // MISSING_CLOCK_OUT | EXCESSIVE_HOURS | LATE_ARRIVAL | etc.
-  severity enum           // INFO | WARN | ERROR
+  code string
+  severity enum
   message string
   resolvedAt timestamp
   resolvedByUserId int
@@ -363,8 +422,8 @@ timesheet_anomalies [icon: alert-triangle, color: red] {
 timesheet_adjustments [icon: edit-3, color: red] {
   id int pk
   timesheetDayId int
-  field enum              // REGULAR | BREAK | OVERTIME | LATE | UNDERTIME
-  mode enum               // DELTA | OVERRIDE
+  field enum
+  mode enum
   originalValue int
   newValue int
   reason string
@@ -383,12 +442,12 @@ timesheet_adjustments [icon: edit-3, color: red] {
 pay_periods [icon: calendar, color: orange] {
   id int pk
   companyId int
-  periodType enum         // WEEKLY | BI_WEEKLY | SEMI_MONTHLY | MONTHLY
-  name string             // e.g., "January 1-15, 2026"
+  periodType enum
+  name string
   startDate date
   endDate date
   payDate date
-  status enum             // OPEN | PROCESSING | CLOSED | FINALIZED
+  status enum
   closedAt timestamp
   closedByUserId int
   createdAt timestamp
@@ -400,8 +459,8 @@ payslips [icon: file-text, color: amber] {
   id int pk
   employeeId int
   payPeriodId int
-  status enum             // DRAFT | GENERATED | FINALIZED | PAID | VOID
-  payslipNumber string    // e.g., "PS-2026-001234"
+  status enum
+  payslipNumber string
   currency string
   totalRegularMinutes int
   totalOvertimeMinutes int
@@ -430,12 +489,12 @@ payslips [icon: file-text, color: amber] {
 payslip_items [icon: list, color: amber] {
   id int pk
   payslipId int
-  category enum           // EARNING | DEDUCTION | TAX | CONTRIBUTION
-  type string             // e.g., BASIC | OVERTIME | SSS | PHILHEALTH | TAX
+  category enum
+  type string
   code string
   label string
-  quantity decimal        // for hourly items
-  rate decimal            // for hourly items
+  quantity decimal
+  rate decimal
   amount decimal
   isTaxable boolean
   metaJson text
@@ -447,16 +506,16 @@ payslip_items [icon: list, color: amber] {
 deductions [icon: minus-circle, color: rose] {
   id int pk
   employeeId int
-  type enum               // SSS | PHILHEALTH | PAGIBIG | TAX | LOAN | INSURANCE | OTHER
+  type enum
   label string
-  calculationType enum    // FIXED | PERCENTAGE | TIERED
+  calculationType enum
   amount decimal
-  percentage decimal      // for percentage type
-  maxAmount decimal       // cap
-  frequency enum          // PER_PAYROLL | MONTHLY | ONE_TIME
+  percentage decimal
+  maxAmount decimal
+  frequency enum
   effectiveFrom date
   effectiveUntil date
-  remainingBalance decimal // for loans
+  remainingBalance decimal
   isActive boolean
   createdAt timestamp
   updatedAt timestamp
@@ -466,7 +525,7 @@ deductions [icon: minus-circle, color: rose] {
 tax_brackets [icon: percent, color: rose] {
   id int pk
   companyId int
-  name string             // e.g., "PH Tax Table 2026"
+  name string
   minIncome decimal
   maxIncome decimal
   fixedAmount decimal
@@ -485,8 +544,8 @@ tax_brackets [icon: percent, color: rose] {
 leave_types [icon: calendar-x, color: sky] {
   id int pk
   companyId int
-  name string             // e.g., "Vacation Leave", "Sick Leave"
-  code string             // e.g., "VL", "SL"
+  name string
+  code string
   description text
   defaultDaysPerYear decimal
   carryOverLimit decimal
@@ -497,7 +556,7 @@ leave_types [icon: calendar-x, color: sky] {
   allowHalfDay boolean
   minNoticeDays int
   maxConsecutiveDays int
-  applicableGender enum   // ALL | MALE | FEMALE
+  applicableGender enum
   isActive boolean
   createdAt timestamp
   updatedAt timestamp
@@ -629,9 +688,6 @@ interviews [icon: users, color: violet] {
   scheduledAt timestamp
   durationMinutes int
   location string
-
-  // interviewerUserIds text  // ❌ removed (normalized)
-
   feedbackJson text
   overallRating int
   recommendation enum
@@ -776,7 +832,6 @@ courses [icon: book-open, color: emerald] {
   isMandatory boolean
   recertificationMonths int
   contentUrl string
-  thumbnailUrl string
   isActive boolean
   createdAt timestamp
   updatedAt timestamp
@@ -808,9 +863,6 @@ certifications [icon: shield, color: emerald] {
   category string
   validityMonths int
   isRequired boolean
-
-  // requiredForPositionIds text // ❌ removed (normalized)
-
   createdAt timestamp
   updatedAt timestamp
   deletedAt timestamp
@@ -959,6 +1011,11 @@ roles [icon: key, color: yellow] {
 
 permissions [icon: lock, color: yellow] {
   id int pk
+
+  // NEW: permissions are tied to a feature/module
+  // This lets you enforce: company has feature enabled AND user has permission
+  featureId int
+
   module string
   action string
   code string
@@ -1083,6 +1140,12 @@ employees.departmentId > departments.id
 employees.positionId > positions.id
 employees.reportingManagerId > employees.id
 
+// Features + Tier Gating
+tier_features.featureId > features.id
+company_features.companyId > companies.id
+company_features.featureId > features.id
+company_features.createdByUserId > users.id
+
 // Compensation
 salary_grades.companyId > companies.id
 employee_compensation.employeeId > employees.id
@@ -1188,6 +1251,7 @@ documents.uploadedByUserId > users.id
 documents.approvedByUserId > users.id
 
 // RBAC
+permissions.featureId > features.id
 roles.companyId > companies.id
 role_permissions.roleId > roles.id
 role_permissions.permissionId > permissions.id

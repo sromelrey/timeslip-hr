@@ -149,4 +149,25 @@
       opacity: 0.7;
     }
   }
+
+  /* Landing Page Utilities */
+  .gradient-text {
+    @apply bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent;
+  }
+
+  .glow-effect {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .glow-effect-strong {
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.6), 0 0 60px rgba(102, 126, 234, 0.3);
+  }
+
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+}
+
+html {
+  @apply smooth-scroll;
 }
