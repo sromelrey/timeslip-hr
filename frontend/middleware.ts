@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require authentication
-const protectedRoutes = ['/products', '/dashboard', '/employee', '/timesheet', '/payroll', '/settings', '/kiosk', '/portal'];
+const protectedRoutes = ['/products', '/dashboard', '/employee', '/timesheet', '/payroll', '/settings', '/kiosk', '/portal', '/super-admin'];
 
 // Routes only for non-authenticated users
 const authRoutes = ['/sign-in'];
@@ -15,6 +15,7 @@ const adminOnlyRoutes = ['/employee', '/payroll', '/settings'];
 
 // Default redirect for each role after login
 const roleDefaultRoutes: Record<string, string> = {
+  SUPER_ADMIN: '/super-admin/dashboard',
   ADMIN: '/dashboard',
   EMPLOYEE: '/portal/dashboard',
   KIOSK: '/kiosk',
@@ -73,6 +74,15 @@ export function middleware(request: NextRequest) {
     if (isAuthenticated && userRole !== 'KIOSK') {
       const redirectTo = roleDefaultRoutes[userRole] || '/portal/dashboard';
       console.log(`[Middleware] Redirecting ${userRole} from /kiosk to:`, redirectTo);
+      return NextResponse.redirect(new URL(redirectTo, request.url));
+    }
+  }
+
+  // Redirect non-SUPER_ADMIN from super-admin routes
+  if (pathname.startsWith('/super-admin')) {
+    if (isAuthenticated && userRole !== 'SUPER_ADMIN') {
+      const redirectTo = roleDefaultRoutes[userRole] || '/kiosk';
+      console.log(`[Middleware] Redirecting ${userRole} from /super-admin to:`, redirectTo);
       return NextResponse.redirect(new URL(redirectTo, request.url));
     }
   }

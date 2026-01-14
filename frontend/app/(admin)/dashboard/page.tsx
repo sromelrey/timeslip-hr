@@ -1,4 +1,5 @@
 "use client";
+import React, { useState, useEffect } from "react";
 
 import { useAuth } from "@/hooks/auth";
 import { useDashboardStats } from "@/hooks/use-dashboard-stats";
@@ -19,6 +20,11 @@ import { RecentActivityFeed } from "@/components/admin/dashboard/recent-activity
 export default function DashboardPage() {
   const { user } = useAuth();
   const { stats, loading, error, refetch } = useDashboardStats();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Auto-refresh every 5 minutes
   useDashboardRefresh(refetch);
@@ -98,8 +104,8 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          < h1 className="text-2xl font-bold tracking-tight">
-            Welcome back, {user?.firstName || user?.name || 'Admin'}
+          <h1 className="text-2xl font-bold tracking-tight">
+            Welcome back, {mounted ? (user?.firstName || user?.name || 'Admin') : 'Admin'}
           </h1>
           <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your team today.</p>
         </div>

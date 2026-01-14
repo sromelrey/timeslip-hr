@@ -20,7 +20,9 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'ADMIN') {
+      if (user.role === 'SUPER_ADMIN') {
+        router.push('/super-admin/dashboard');
+      } else if (user.role === 'ADMIN') {
         router.push('/dashboard');
       } else {
         router.push('/kiosk');

@@ -9,6 +9,7 @@ import deductionReducer from './core/slices/deduction-slice';
 import dashboardReducer from './core/slices/dashboard-slice';
 import reportsReducer from './core/slices/reports-slice';
 import settingsReducer from './core/slices/settings-slice';
+import superAdminReducer from './core/slices/super-admin-slice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     dashboard: dashboardReducer,
     reports: reportsReducer,
     settings: settingsReducer,
+    superAdmin: superAdminReducer,
   },
 });
 

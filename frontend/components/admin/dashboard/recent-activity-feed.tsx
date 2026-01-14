@@ -71,8 +71,8 @@ export function RecentActivityFeed({ activities }: RecentActivityFeedProps) {
               <p className="text-sm font-medium truncate">
                 {activity.employeeName}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {activity.eventType.replace('_', ' ')} • {getRelativeTime(activity.timestamp)}
+              <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                {(activity.eventType || 'UNKNOWN_EVENT').replace('_', ' ')} • {getRelativeTime(activity.timestamp)}
               </p>
             </div>
           </div>

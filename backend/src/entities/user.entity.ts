@@ -10,12 +10,12 @@ import { UserRole } from '@/types/enums';
 @Index(['email'], { unique: true, where: 'deleted_at IS NULL' })
 @Index(['companyId', 'role'], { where: 'deleted_at IS NULL' })
 export class User extends CommonEntity {
-  @Column({ name: 'company_id', type: 'int' })
-  companyId: number;
+  @Column({ name: 'company_id', type: 'int', nullable: true })
+  companyId?: number | null;
 
-  @ManyToOne(() => Company, (company) => company.users, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => Company, (company) => company.users, { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'company_id' })
-  company: Company;
+  company?: Company | null;
 
   @Column({ type: 'varchar', length: 255 })
   @Index()

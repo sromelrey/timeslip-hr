@@ -11,6 +11,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AuditModule } from './modules/audit/audit.module';
     ReportsModule,
     SettingsModule,
     AuditModule,
+    SuperAdminModule,
   ],
 })
 export class AppModule {}

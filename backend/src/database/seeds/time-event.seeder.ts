@@ -8,14 +8,19 @@ import { randomUUID } from 'crypto';
 export const TimeEventSeeder: Seeder = {
   name: 'TimeEventSeeder',
 
-  async run(dataSource: DataSource): Promise<void> {
+  async run(dataSource: DataSource, companyId?: number): Promise<void> {
     const timeEventRepo = dataSource.getRepository(TimeEvent);
     const employeeRepo = dataSource.getRepository(Employee);
 
-    // Get active employees
-    const employees = await employeeRepo.find({ where: { isActive: true } });
+    // Get active employees (optionally filtered by company)
+    const whereClause: { isActive: boolean; companyId?: number } = { isActive: true };
+    if (companyId) {
+      whereClause.companyId = companyId;
+      console.log(`  Filtering to company ID: ${companyId}`);
+    }
+    const employees = await employeeRepo.find({ where: whereClause });
     if (employees.length === 0) {
-      console.log('  ❌ No employees found. Run EmployeeSeeder first.');
+      console.log('  ❌ No employees found. Run EmployeeSeeder first or check company ID.');
       return;
     }
 

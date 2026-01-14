@@ -14,8 +14,12 @@ export class EmployeeCompensationService {
     private readonly employeeRepo: Repository<Employee>,
   ) {}
 
-  async create(employeeId: number, dto: CreateCompensationDto) {
-    const employee = await this.employeeRepo.findOneBy({ id: employeeId });
+  async create(employeeId: number, dto: CreateCompensationDto, companyId?: number) {
+    const where: any = { id: employeeId };
+    if (companyId) {
+      where.companyId = companyId;
+    }
+    const employee = await this.employeeRepo.findOne({ where });
     if (!employee) {
       throw new NotFoundException(`Employee #${employeeId} not found`);
     }
@@ -51,16 +55,34 @@ export class EmployeeCompensationService {
     return this.compensationRepo.save(compensation);
   }
 
-  async getHistory(employeeId: number) {
+  async getHistory(employeeId: number, companyId?: number) {
+    // Verify employee belongs to company
+    const whereEmployee: any = { id: employeeId };
+    if (companyId) {
+      whereEmployee.companyId = companyId;
+    }
+    const employee = await this.employeeRepo.findOne({ where: whereEmployee });
+    if (!employee) {
+      throw new NotFoundException(`Employee #${employeeId} not found`);
+    }
+
     return this.compensationRepo.find({
       where: { employeeId },
       order: { effectiveFrom: 'DESC' },
     });
   }
 
-  async getCurrent(employeeId: number) {
-    // Basic logic: find one with no effectiveTo or effectiveTo > today
-    // Or just sort by date desc and take first.
+  async getCurrent(employeeId: number, companyId?: number) {
+    // Verify employee belongs to company
+    const whereEmployee: any = { id: employeeId };
+    if (companyId) {
+      whereEmployee.companyId = companyId;
+    }
+    const employee = await this.employeeRepo.findOne({ where: whereEmployee });
+    if (!employee) {
+      throw new NotFoundException(`Employee #${employeeId} not found`);
+    }
+
     return this.compensationRepo.findOne({
       where: { employeeId },
       order: { effectiveFrom: 'DESC' },
