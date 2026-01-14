@@ -2,6 +2,11 @@
 
 This guide provides step-by-step instructions to test all features across all 9 Epics of the TimeSlip-HR system.
 
+## Core Testing Resources
+
+- **[Regression Testing Guide](file:///c:/Users/ROMEL/Desktop/Romel%20Documents/development/Personal%20Passion/timeslip-hr/project-docs/REGRESSION-TESTING-GUIDE.md)**: Start here for end-to-end verification of major flows.
+- **[API Documentation](http://localhost:3001/api/docs)**: For technical endpoint testing.
+
 ## Prerequisites
 
 Before testing, ensure you have:

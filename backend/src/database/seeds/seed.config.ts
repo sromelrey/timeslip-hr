@@ -25,5 +25,5 @@ export const seedDataSource = new DataSource({
  */
 export interface Seeder {
   name: string;
-  run(dataSource: DataSource): Promise<void>;
+  run(dataSource: DataSource, companyId?: number): Promise<void>;
 }

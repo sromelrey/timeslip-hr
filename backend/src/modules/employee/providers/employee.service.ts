@@ -16,14 +16,19 @@ export class EmployeeService {
     private readonly compensationRepo: Repository<EmployeeCompensation>,
   ) {}
 
-  async findAll(): Promise<Employee[]> {
+  async findAll(companyId?: number): Promise<Employee[]> {
     return this.employeeRepo.find({
+      where: companyId ? { companyId } : {},
       order: { createdAt: 'DESC' },
     });
   }
 
-  async findOne(id: number): Promise<Employee> {
-    const employee = await this.employeeRepo.findOne({ where: { id } });
+  async findOne(id: number, companyId?: number): Promise<Employee> {
+    const where: any = { id };
+    if (companyId) {
+      where.companyId = companyId;
+    }
+    const employee = await this.employeeRepo.findOne({ where });
     if (!employee) {
       throw new NotFoundException(`Employee with ID ${id} not found`);
     }
@@ -77,23 +82,27 @@ export class EmployeeService {
     return savedEmployee;
   }
 
-  async update(id: number, dto: UpdateEmployeeDto): Promise<Employee> {
-    const employee = await this.findOne(id);
+  async update(id: number, dto: UpdateEmployeeDto, companyId?: number): Promise<Employee> {
+    const employee = await this.findOne(id, companyId);
     Object.assign(employee, dto);
     return this.employeeRepo.save(employee);
   }
 
-  async remove(id: number): Promise<void> {
-    const employee = await this.findOne(id);
+  async remove(id: number, companyId?: number): Promise<void> {
+    const employee = await this.findOne(id, companyId);
     await this.employeeRepo.softRemove(employee);
   }
 
-  async findByEmployeeNumber(employeeNumber: number): Promise<Employee | null> {
-    return this.employeeRepo.findOne({ where: { employeeNumber } });
+  async findByEmployeeNumber(employeeNumber: number, companyId?: number): Promise<Employee | null> {
+    const where: any = { employeeNumber };
+    if (companyId) {
+      where.companyId = companyId;
+    }
+    return this.employeeRepo.findOne({ where });
   }
 
-  async setPin(id: number, pin: string): Promise<void> {
-    const employee = await this.findOne(id);
+  async setPin(id: number, pin: string, companyId?: number): Promise<void> {
+    const employee = await this.findOne(id, companyId);
     employee.pinHash = await argon2.hash(pin);
     await this.employeeRepo.save(employee);
   }
