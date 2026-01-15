@@ -11,13 +11,8 @@ export const PayPeriodSeeder: Seeder = {
     const payPeriodRepo = dataSource.getRepository(PayPeriod);
     const companyRepo = dataSource.getRepository(Company);
 
-    const targetCompanies = await companyRepo.find({
-      where: [
-        { name: 'Acme Corp' },
-        { name: 'Tech Solutions Inc.' },
-        { name: 'Startup Hub' }
-      ]
-    });
+    // Get ALL companies to seed pay periods for everyone
+    const targetCompanies = await companyRepo.find();
 
     if (targetCompanies.length === 0) {
       console.log('  ❌ No companies found to seed pay periods.');
@@ -27,8 +22,14 @@ export const PayPeriodSeeder: Seeder = {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const startDateStr = startOfMonth.toISOString().split('T')[0];
-    const endDateStr = endOfMonth.toISOString().split('T')[0];
+    
+    // Use local date formatting to avoid UTC timezone conversion issues
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const formatLocalDate = (d: Date) => 
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    
+    const startDateStr = formatLocalDate(startOfMonth);
+    const endDateStr = formatLocalDate(endOfMonth);
 
     for (const company of targetCompanies) {
       let payPeriod = await payPeriodRepo.findOne({

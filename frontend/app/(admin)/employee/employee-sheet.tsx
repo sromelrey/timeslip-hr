@@ -1,4 +1,5 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "@/hooks/use-toast"
 import { useEmployeeForm, useEmployeeManagement } from "@/hooks/employees"
 import { Employee } from "@/store/core/thunks/employee-thunks"
 
@@ -44,9 +46,11 @@ export function EmployeeSheet({
   } = useEmployeeForm()
 
   const { createEmployee, updateEmployee } = useEmployeeManagement()
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     if (open) {
+      setIsSaving(false)
       if (employeeToEdit) {
         setFormFromEntity(employeeToEdit)
       } else {
@@ -57,17 +61,29 @@ export function EmployeeSheet({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSaving) return
+
+    setIsSaving(true)
     const dto = getFormattedData()
     
     try {
       if (employeeToEdit) {
         await updateEmployee(employeeToEdit.id, dto)
+        toast({ title: "Success", description: "Employee updated successfully" })
       } else {
         await createEmployee(dto)
+        toast({ title: "Success", description: "Employee created successfully" })
       }
       onOpenChange(false)
     } catch (error) {
       console.error("Failed to save employee:", error)
+      toast({ 
+        title: "Error", 
+        description: "Failed to save employee. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -193,7 +209,8 @@ export function EmployeeSheet({
                 Cancel
               </Button>
             </SheetClose>
-            <Button type="submit">
+            <Button type="submit" disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {employeeToEdit ? "Save Changes" : "Create Employee"}
             </Button>
           </SheetFooter>

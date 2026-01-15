@@ -16,6 +16,26 @@ export const UserSeeder: Seeder = {
     
     // Create Global Admin for Acme Corp (First company)
     const acme = allCompanies.find(c => c.name === 'Acme Corp');
+    
+    // Create Super Admin (Global)
+    const superAdminEmail = 'superadmin@example.com';
+    let superAdmin = await userRepo.findOne({ where: { email: superAdminEmail } });
+    if (!superAdmin) {
+      console.log(`  Creating super admin: ${superAdminEmail}`);
+      const passwordHash = await argon2.hash('password123');
+      superAdmin = userRepo.create({
+        email: superAdminEmail,
+        passwordHash,
+        firstName: 'Super',
+        lastName: 'Admin',
+        displayName: 'Super Admin',
+        role: UserRole.SUPER_ADMIN,
+        isActive: true,
+      });
+      await userRepo.save(superAdmin);
+      console.log(`  ✅ Created super admin: ${superAdminEmail}`);
+    }
+
     if (acme) {
       const adminEmail = 'admin@example.com';
       let admin = await userRepo.findOne({ where: { email: adminEmail } });

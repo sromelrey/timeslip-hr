@@ -14,7 +14,7 @@ import { clearError, clearSelectedTimesheet } from '@/store/core/slices/timeshee
 
 export function useTimesheetManagement() {
   const dispatch = useDispatch<AppDispatch>();
-  const { timesheets, selectedTimesheet, rawEvents, loading, error } = useSelector(
+  const { timesheets, selectedTimesheet, rawEvents, loading, actionLoadingIds, error } = useSelector(
     (state: RootState) => state.timesheet
   );
 
@@ -87,6 +87,7 @@ export function useTimesheetManagement() {
     selectedTimesheet,
     rawEvents,
     isLoading: loading,
+    actionLoadingIds,
     error,
     loadTimesheets,
     loadTimesheetById,

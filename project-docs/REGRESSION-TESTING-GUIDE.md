@@ -1,130 +1,103 @@
 # TimeSlip-HR Regression Testing Guide
 
-This guide outlines the critical end-to-end flows that must be verified before any major release. It covers the complete lifecycle from system-wide administration to individual company payroll finalization.
+This guide outlines the critical end-to-end flows that must be verified before any major release. It utilizes the built-in database seeder to ensure a consistent starting point for all tests.
+
+## Initial Setup: Data Environment
+**Objective:** Prepare a clean database with all necessary mock data for isolation and complex flow testing.
+
+1. **Database Reset**:
+   - Run `npm run db:reset` in the `backend` directory.
+   - **What this does**: Automatically drops the schema, recreates tables, and runs all seeders (Companies, Users, Employees, Pay Periods, etc.).
+2. **Verify Connections**:
+   - Ensure the backend (`npm run start:dev`) and frontend (`npm run dev`) are running without errors.
+
+---
 
 ## Regression Flow 0: Super Admin Global Operations
 **Objective:** Verify that a Super Admin can manage the entire system and oversee all companies.
 
 1. **Super Admin Login:**
-   - Log in with `SUPER_ADMIN` credentials.
+   - Log in with credentials: `superadmin@example.com` / `password123`.
    - Verify redirect to `/super-admin/dashboard`.
    - Verify System Admin sidebar is present with "Global Stats", "Companies", and "System Settings".
 2. **Global Analytics:**
-   - Verify "Total Companies", "Total Users", and "Total Employees" display non-zero values (after seeding/activity).
+   - Verify "Total Companies" (3), "Total Users", and "Total Employees" display the expected seeded values.
 3. **Company Management:**
    - Navigate to `/super-admin/companies`.
-   - **Create**: Add a new company "Regression Test Organization".
-   - **List**: Verify the new company appears in the table.
-   - **Edit**: Rename the company and verify changes persist.
-   - **Delete**: Delete a test company and verify it is removed from the active list.
-4. **Security Isolation:**
-   - Verify that the Super Admin can see statistics for ALL companies, not just one.
+   - **View Seeded**: Verify "Acme Corp", "Tech Solutions Inc.", and "Startup Hub" are present.
+   - **Manual Create**: Add a new company "Regression Test Organization".
+   - **Edit**: Rename it and verify changes persist.
 
 ---
 
-## Regression Flow 1: Company Onboarding
-**Objective:** Verify that a new company can register and the primary admin can access the dashboard.
+## Regression Flow 1: Multi-Tenant Isolation
+**Objective:** Verify that data is isolated between different companies.
 
-1. **Registration:**
-   - Navigate to `/sign-up`.
-   - Fill in Company Name (e.g., "Regression Test Corp"), Admin Name, Email, and Password.
-   - Click **Sign Up**.
-2. **First Login & Dashboard:**
-   - Verify redirect to `/dashboard` (Note: `/admin/dashboard` is the internal path but resolves to `/dashboard`).
-   - Verify Company Name appears in the header/settings.
-   - Verify empty state widgets (Total Employees: 0, etc.).
-
----
-
-## Regression Flow 2: Workforce Configuration
-**Objective:** Verify that employees can be added with correct compensation and deductions.
-
-1. **Add Department/Position (if applicable):**
-   - Verify settings/configuration for workforce structure.
-2. **Create Employee:**
+1. **Admin Login (Acme Corp):**
+   - Log in with `admin@example.com` / `password123`.
+2. **Isolation Check:**
    - Navigate to `/admin/employee`.
-   - Click **Add Employee**.
-   - Fill in details: Name, Employee ID (unique), Contact Info.
-   - **Crucial:** Set Compensation (Hourly or Monthly Salary).
-3. **Configure Deductions:**
-   - Go to Employee Details or Payroll Settings.
-   - Add a Fixed deduction (e.g., "Tax" - 1000).
-   - Add a Percentage deduction (e.g., "Health" - 2%).
-4. **Verification:**
-   - Ensure employee appears in the active list.
+   - Verify only employees belonging to **Acme Corp** (e.g., John Doe) are visible.
+   - Employees from "Tech Solutions Inc." should NOT be listed.
+3. **Switch Context:**
+   - Log out and log in as an Admin for another account or the Super Admin to verify the global view.
 
 ---
 
-## Regression Flow 3: Time & Attendance
-**Objective:** Verify that the Kiosk works and data flows into Timesheets.
+## Regression Flow 2: Workforce & Time Tracking
+**Objective:** Verify that seeded employees can log time and that the UI handles high activity.
 
 1. **Kiosk Activity:**
    - Navigate to `/kiosk`.
-   - Enter Employee ID.
-   - Perform: **Clock In**.
-   - (Wait or simulate time) Perform: **Break In** -> **Break Out**.
-   - Perform: **Clock Out**.
-2. **Timesheet Generation:**
+   - Log in as a seeded employee (e.g., John Doe - look up ID/PIN in database or admin panel).
+   - Perform: **Clock In** -> **Clock Out**.
+2. **Timesheet Row-Level Loading:**
    - Navigate to `/admin/timesheet`.
-   - Click **Generate Timesheets** for the current period.
-   - Open the employee's timesheet.
-   - Verify: Calculated Regular Hours, Break Time, and Overtime.
-3. **Approval Flow:**
-   - Change Status: `DRAFT` -> `REVIEWED` -> `APPROVED`.
-   - Verify timesheet becomes read-only after `LOCKED` (or `APPROVED` depending on policy).
+   - Find John Doe's timesheet for the current January 2026 pay period.
+   - Click **Populate Days**.
+   - **Verify UX**: Ensure only the specific row shows a loading spinner, and the rest of the table remains interactive.
 
 ---
 
-## Regression Flow 4: Payroll & Payslips
-**Objective:** Verify that payroll calculates correctly and produces downloadable documents.
+## Regression Flow 3: Payroll Verification
+**Objective:** Verify accurate payroll calculations using complex seeded scenarios.
 
-1. **Pay Period Setup:**
+1. **Pay Period Validation:**
    - Navigate to `/admin/payroll`.
-   - Create a new Pay Period (e.g., Semi-Monthly: 1st-15th).
+   - Use the seeded **January 2026** pay period (01-01 to 01-31).
 2. **Payslip Generation:**
    - Go to **Payslips** tab.
-   - Click **Generate Payslips** for the period.
-   - Verify the newly created employee has a payslip.
-3. **Calculation Verification:**
-   - Open Payslip Details.
-   - Check **Gross Pay** (Hours * Rate).
-   - Check **Deductions** (Fixed + Percentage).
-   - Check **Net Pay** (Gross - Deductions).
-4. **Finalization & Export:**
-   - Click **Finalize** on the payslip.
-   - Click **Download PDF**.
-   - Open PDF and verify company/employee branding and accurate numbers.
-   - (Optional) Perform **Bulk Download** if multiple employees exist.
+   - Click **Generate Payslips**.
+   - Verify seeded employees have non-zero gross pay based on their compensation and the 15 days of seeded time events.
+3. **Export Verification:**
+   - Open a payslip and click **Download PDF**.
+   - Verify all calculations (Regular Pay, Deductions, Net Pay) match the UI.
 
 ---
 
-## Regression Flow 5: User Management & Security
+## Regression Flow 4: User Management & Security
 **Objective:** Verify RBAC and session security.
 
-1. **Super Admin Isolation:**
+1. **RBAC Enforcement:**
    - Log in as a regular `ADMIN`.
-   - Attempt to access `/super-admin/dashboard` and `/super-admin/companies`.
+   - Attempt to access `/super-admin/dashboard`.
    - Verify access is denied and user is redirected to `/dashboard`.
-2. **Admin/Employee Access:**
-   - Log in as an Employee.
-   - Attempt to access `/dashboard` or `/super-admin/dashboard`.
-   - Verify access is denied (Redirect to `/kiosk` or `/portal`).
-3. **Password/Profile Management:**
-   - Update Admin password/profile.
-   - Logout and login with new credentials.
+2. **Prevention of Double Submission:**
+   - Navigate to `/admin/employee`.
+   - Click **Add Employee**.
+   - Rapidly click **Create Employee** twice.
+   - Verify that the button disables immediately and only **one** employee is created.
 
 ---
 
 ## Quick Regression Checklist
-| Flow | Status | Notes |
-| :--- | :--- | :--- |
-| Super Admin Stats | [ ] | Global overview works |
-| Company CRUD | [ ] | Super Admin can add/edit/delete |
-| Registration | [ ] | |
-| Add Employee | [ ] | |
-| Kiosk Log | [ ] | |
-| Generate Timesheet | [ ] | |
-| Approve Timesheet | [ ] | |
-| Generate Payslip | [ ] | |
-| PDF Export | [ ] | |
-| Admin Isolation | [ ] | Regular Admin cannot see Super Admin pages |
+| Flow | Method | Status | Notes |
+| :--- | :--- | :--- | :--- |
+| Database Reset | `npm run db:reset` | [ ] | Schema clean and seeded |
+| Super Admin Login | `superadmin@example.com` | [ ] | |
+| Tenant Isolation | Check Acme vs Tech | [ ] | |
+| Row-Level Loading | Populate Days | [ ] | Improved Table UX |
+| Double Click Fix | Employee Create | [ ] | Prevents duplicate data |
+| Payroll Calc | Jan 2026 Period | [ ] | Seeded events process correctly |
+| PDF Export | Check branding/data | [ ] | |
+
