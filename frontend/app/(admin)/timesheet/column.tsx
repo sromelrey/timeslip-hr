@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, CheckCircle, Eye, Lock, FileText } from "lucide-react"
+import { MoreHorizontal, CheckCircle, Eye, Lock, FileText, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -35,6 +35,7 @@ const getAvailableActions = (status: TimesheetStatus) => {
 interface ColumnProps {
   onStatusUpdate?: (id: number, status: TimesheetStatus) => void
   onPopulate?: (id: number) => void
+  actionLoadingIds?: number[] // Track which rows are loading
 }
 
 export const createColumns = (props?: ColumnProps): ColumnDef<Timesheet>[] => [
@@ -92,6 +93,16 @@ export const createColumns = (props?: ColumnProps): ColumnDef<Timesheet>[] => [
     cell: ({ row }) => {
       const timesheet = row.original
       const availableActions = getAvailableActions(timesheet.status)
+      const isRowLoading = props?.actionLoadingIds?.includes(timesheet.id) ?? false
+
+      // Show loading spinner when action is in progress
+      if (isRowLoading) {
+        return (
+          <div className="flex items-center justify-center h-8 w-8">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        )
+      }
 
       return (
         <DropdownMenu>

@@ -39,7 +39,7 @@ import { TimesheetStatus } from "@/store/core/thunks/timesheet-thunks"
 import { GenerateTimesheetDialog } from "@/components/admin/generate-timesheet-dialog"
 
 export default function TimesheetPage() {
-  const { timesheets, isLoading, loadTimesheets, generateTimesheets, updateStatus, populateDays } = useTimesheetManagement()
+  const { timesheets, isLoading, actionLoadingIds, loadTimesheets, generateTimesheets, updateStatus, populateDays } = useTimesheetManagement()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -54,28 +54,27 @@ export default function TimesheetPage() {
     try {
       await updateStatus(id, status)
       toast({ title: "Success", description: `Timesheet status updated to ${status}` })
-      loadTimesheets()
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Failed to update status"
       toast({ title: "Error", description: message, variant: "destructive" })
     }
-  }, [updateStatus, loadTimesheets])
+  }, [updateStatus])
 
   const handlePopulate = useCallback(async (id: number) => {
     try {
       await populateDays(id)
       toast({ title: "Success", description: "Timesheet days populated from time events" })
-      loadTimesheets()
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Failed to populate days"
       toast({ title: "Error", description: message, variant: "destructive" })
     }
-  }, [populateDays, loadTimesheets])
+  }, [populateDays])
 
   const columns = useMemo(() => createColumns({
     onStatusUpdate: handleStatusUpdate,
     onPopulate: handlePopulate,
-  }), [handleStatusUpdate, handlePopulate])
+    actionLoadingIds,
+  }), [handleStatusUpdate, handlePopulate, actionLoadingIds])
 
   const table = useReactTable({
     data: timesheets,
@@ -182,7 +181,7 @@ export default function TimesheetPage() {
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isLoading && timesheets.length === 0 ? (
                <TableRow>
                 <TableCell
                   colSpan={columns.length}
