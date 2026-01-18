@@ -20,6 +20,7 @@
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seeder.ts",
     "seed:time-events": "ts-node -r tsconfig-paths/register src/database/seeds/seed-time-events.ts",
     "schema:drop": "ts-node -r tsconfig-paths/register src/database/drop-schema.ts",
+    "db:wipe": "ts-node -r tsconfig-paths/register src/database/wipe-data.ts",
     "db:reset": "npm run schema:drop && npm run seed"
   },
   "dependencies": {

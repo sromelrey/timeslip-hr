@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
-
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -11,74 +10,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { timesheetApi, PayPeriod } from "@/lib/timesheet.api"
+import { GenerateCustomTimesheetDto } from "@/store/core/thunks/timesheet-thunks"
 
 interface GenerateTimesheetDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onGenerate: (payPeriodId: number) => Promise<void>
+  onGenerateCustom: (dto: GenerateCustomTimesheetDto) => Promise<void>
 }
 
 export function GenerateTimesheetDialog({
   open,
   onOpenChange,
-  onGenerate,
+  onGenerateCustom,
 }: GenerateTimesheetDialogProps) {
-  const [payPeriods, setPayPeriods] = useState<PayPeriod[]>([])
-  const [selectedPayPeriodId, setSelectedPayPeriodId] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isFetching, setIsFetching] = useState(false)
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Fetch pay periods when dialog opens
-  useEffect(() => {
-    if (open) {
-      setIsFetching(true)
-      timesheetApi
-        .getPayPeriods()
-        .then((data) => {
-          setPayPeriods(data)
-          // Auto-select the first one if available
-          if (data.length > 0) {
-            setSelectedPayPeriodId(data[0].id.toString())
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch pay periods:", err)
-        })
-        .finally(() => {
-          setIsFetching(false)
-        })
-    }
-  }, [open])
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!startDate || !endDate) return
+    if (endDate < startDate) return // Basic validation
 
-  const handleGenerate = async () => {
-    if (!selectedPayPeriodId) return
-
-    setIsLoading(true)
+    setIsSubmitting(true)
     try {
-      await onGenerate(Number(selectedPayPeriodId))
+      await onGenerateCustom({ startDate, endDate })
       onOpenChange(false)
-      setSelectedPayPeriodId("")
-    } catch (error) {
-      console.error("Failed to generate timesheets:", error)
+      setStartDate("")
+      setEndDate("")
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
-  }
-
-  const formatDateRange = (startDate: string, endDate: string) => {
-    const start = new Date(startDate).toLocaleDateString()
-    const end = new Date(endDate).toLocaleDateString()
-    return `${start} - ${end}`
   }
 
   return (
@@ -87,49 +52,46 @@ export function GenerateTimesheetDialog({
         <DialogHeader>
           <DialogTitle>Generate Timesheets</DialogTitle>
           <DialogDescription>
-            Select a pay period to generate timesheets for all active employees.
+             Define a custom date range. A Pay Period will be created automatically if needed, and empty timesheets will be generated for all active employees.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="pay-period">Pay Period</Label>
-            {isFetching ? (
-              <div className="text-muted-foreground text-sm">Loading pay periods...</div>
-            ) : payPeriods.length === 0 ? (
-              <div className="text-destructive text-sm">
-                No pay periods found. Please create pay periods first.
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="startDate">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                />
               </div>
-            ) : (
-              <Select
-                value={selectedPayPeriodId}
-                onValueChange={setSelectedPayPeriodId}
-              >
-                <SelectTrigger id="pay-period">
-                  <SelectValue placeholder="Select a pay period" />
-                </SelectTrigger>
-                <SelectContent>
-                  {payPeriods.map((period) => (
-                    <SelectItem key={period.id} value={period.id.toString()}>
-                      {formatDateRange(period.startDate, period.endDate)}
-                      {period.status === "CLOSED" && " (Closed)"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="grid gap-2">
+                <Label htmlFor="endDate">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            {startDate && endDate && endDate < startDate && (
+                 <p className="text-sm text-destructive">End date cannot be before start date.</p>
             )}
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleGenerate}
-            disabled={!selectedPayPeriodId || isLoading || payPeriods.length === 0}
-          >
-            {isLoading ? "Generating..." : "Generate"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !startDate || !endDate || endDate < startDate}>
+              {isSubmitting ? "Generating..." : "Generate"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

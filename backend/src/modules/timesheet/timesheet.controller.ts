@@ -6,6 +6,11 @@ import { GenerateTimesheetDto } from './dtos/generate-timesheet.dto';
 import { UpdateTimesheetStatusDto } from './dtos/update-timesheet-status.dto';
 import { CreateAdjustmentDto } from './dtos/create-adjustment.dto';
 import { Request } from 'express';
+import { RolesGuard } from '@/guards/roles.guard';
+import { Roles } from '@/guards/roles.decorator';
+import { UserRole } from '@/types/enums';
+import { CreateManualEntryDto } from './dtos/create-manual-entry.dto';
+import { GenerateCustomTimesheetDto } from './dtos/generate-custom-timesheet.dto';
 
 interface AuthenticatedRequest extends Request {
   user: { id: number; companyId: number };
@@ -28,6 +33,12 @@ export class TimesheetController {
   @ApiOperation({ summary: 'List all pay periods for the company' })
   async getPayPeriods(@Req() req: AuthenticatedRequest) {
     return this.timesheetService.getPayPeriods(req.user.companyId);
+  }
+
+  @Post('generate-custom')
+  @ApiOperation({ summary: 'Generate timesheets for a custom date range' })
+  async generateCustom(@Body() dto: GenerateCustomTimesheetDto, @Req() req: AuthenticatedRequest) {
+    return this.timesheetService.generateCustom(req.user.companyId, dto, req.user.id);
   }
 
   @Post('generate')
@@ -56,6 +67,18 @@ export class TimesheetController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.timesheetService.updateStatus(id, dto.status, req.user.id, req.user.companyId);
+  }
+
+  @Post(':id/manual-entry')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Manually add a daily entry to a timesheet' })
+  async addManualEntry(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateManualEntryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.timesheetService.addManualEntry(id, dto, req.user.id, req.user.companyId);
   }
 
   @Post('days/:dayId/adjustments')

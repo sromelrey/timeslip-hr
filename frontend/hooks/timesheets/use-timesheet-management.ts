@@ -7,8 +7,12 @@ import {
   generateTimesheets,
   fetchRawEvents,
   createAdjustment as createAdjustmentThunk,
+  addManualEntry as addManualEntryThunk,
+  generateCustomTimesheets,
   TimesheetStatus,
   CreateAdjustmentDto,
+  CreateManualEntryDto,
+  GenerateCustomTimesheetDto,
 } from '@/store/core/thunks/timesheet-thunks';
 import { clearError, clearSelectedTimesheet } from '@/store/core/slices/timesheet-slice';
 
@@ -74,6 +78,13 @@ export function useTimesheetManagement() {
     [dispatch]
   );
 
+  const handleAddManualEntry = useCallback(
+    async (timesheetId: number, dto: CreateManualEntryDto) => {
+      return dispatch(addManualEntryThunk({ timesheetId, dto })).unwrap();
+    },
+    [dispatch]
+  );
+
   const handleClearError = useCallback(() => {
     dispatch(clearError());
   }, [dispatch]);
@@ -81,6 +92,13 @@ export function useTimesheetManagement() {
   const handleClearSelected = useCallback(() => {
     dispatch(clearSelectedTimesheet());
   }, [dispatch]);
+
+  const handleGenerateCustomTimesheets = useCallback(
+    async (dto: GenerateCustomTimesheetDto) => {
+       return dispatch(generateCustomTimesheets(dto)).unwrap();
+    },
+    [dispatch]
+  );
 
   return {
     timesheets,
@@ -93,10 +111,12 @@ export function useTimesheetManagement() {
     loadTimesheetById,
     loadRawEvents,
     generateTimesheets: handleGenerateTimesheets,
+    generateCustomTimesheets: handleGenerateCustomTimesheets,
     updateEntry: handleUpdateEntry,
     updateStatus: handleUpdateStatus,
     populateDays: handlePopulateDays,
     createAdjustment: handleCreateAdjustment,
+    addManualEntry: handleAddManualEntry,
     clearError: handleClearError,
     clearSelectedTimesheet: handleClearSelected,
     TimesheetStatus,

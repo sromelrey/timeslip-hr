@@ -7,7 +7,13 @@ This guide outlines the critical end-to-end flows that must be verified before a
 
 1. **Database Reset**:
    - Run `npm run db:reset` in the `backend` directory.
-   - **What this does**: Automatically drops the schema, recreates tables, and runs all seeders (Companies, Users, Employees, Pay Periods, etc.).
+   - **What this does**: Automatically drops the schema, recreates tables, and runs all seeders:
+     - **Core Data**: Companies, Users, Employees.
+     - **Payroll Setup**: Pay Periods, Deductions, and Compensations.
+     - **Timesheets**: Generates 15 days of realistic time events for all active employees.
+   - **Targeted Seeding (Timesheets Only)**:
+     - Run `npm run seed:time-events` to refresh time logs without wiping the database.
+     - For a specific company: `npm run seed:time-events -- --company=<ID>`
 2. **Verify Connections**:
    - Ensure the backend (`npm run start:dev`) and frontend (`npm run dev`) are running without errors.
 
@@ -41,6 +47,11 @@ This guide outlines the critical end-to-end flows that must be verified before a
    - Employees from "Tech Solutions Inc." should NOT be listed.
 3. **Switch Context:**
    - Log out and log in as an Admin for another account or the Super Admin to verify the global view.
+4. **Targeted Seeding Verification:**
+   - Open a terminal and run `npm run seed:time-events -- --company=3` (Using ID for "Tech Solutions Inc.").
+   - **Verify**: Output shows `Filtering to company ID: 3` and events are created.
+   - **Check**: Log in as an admin for "Tech Solutions Inc." and verify timesheets are populated only for its employees.
+   - **Cross-Check**: Log in as "Acme Corp" admin and verify NO new data appeared (unless previously seeded).
 
 ---
 
@@ -96,6 +107,7 @@ This guide outlines the critical end-to-end flows that must be verified before a
 | Database Reset | `npm run db:reset` | [ ] | Schema clean and seeded |
 | Super Admin Login | `superadmin@example.com` | [ ] | |
 | Tenant Isolation | Check Acme vs Tech | [ ] | |
+| Targeted Seeding | `seed:time-events --company=ID` | [ ] | Verifies isolation of seed data |
 | Row-Level Loading | Populate Days | [ ] | Improved Table UX |
 | Double Click Fix | Employee Create | [ ] | Prevents duplicate data |
 | Payroll Calc | Jan 2026 Period | [ ] | Seeded events process correctly |
