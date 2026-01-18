@@ -15,10 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ChevronLeft, Edit, AlertTriangle, Clock, Coffee } from "lucide-react"
+import { ChevronLeft, Edit, AlertTriangle, Clock, Coffee, Plus } from "lucide-react"
 import Link from "next/link"
-import { TimesheetStatus, CreateAdjustmentDto } from "@/store/core/thunks/timesheet-thunks"
+import { TimesheetStatus, CreateAdjustmentDto, CreateManualEntryDto } from "@/store/core/thunks/timesheet-thunks"
 import { AdjustmentDialog } from "@/components/admin/adjustment-dialog"
+import { ManualEntryDialog } from "@/components/admin/manual-entry-dialog"
 import { toast } from "@/hooks/use-toast"
 
 export default function TimesheetDetailPage() {
@@ -31,11 +32,13 @@ export default function TimesheetDetailPage() {
     loadTimesheetById, 
     loadRawEvents, 
     createAdjustment,
+    addManualEntry,
     clearSelectedTimesheet, 
     TimesheetStatus 
   } = useTimesheetManagement()
 
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false)
+  const [manualEntryOpen, setManualEntryOpen] = useState(false)
   const [selectedDay, setSelectedDay] = useState<{
     id: number
     workDate: string
@@ -67,6 +70,18 @@ export default function TimesheetDetailPage() {
       loadTimesheetById(tsId)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to save adjustment"
+      toast({ title: "Error", description: message, variant: "destructive" })
+    }
+  }
+
+  const handleManualEntrySubmit = async (dto: CreateManualEntryDto) => {
+    try {
+      await addManualEntry(tsId, dto)
+      toast({ title: "Entry added", description: "Manual entry has been created." })
+      // Refresh
+      loadTimesheetById(tsId)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to add entry"
       toast({ title: "Error", description: message, variant: "destructive" })
     }
   }
@@ -172,8 +187,16 @@ export default function TimesheetDetailPage() {
         <TabsContent value="entries">
           <Card>
             <CardHeader>
-              <CardTitle>Daily Entries</CardTitle>
-              <CardDescription>Records of hours worked for each day. Click Adjust to make corrections.</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Daily Entries</CardTitle>
+                  <CardDescription>Records of hours worked for each day. Click Adjust to make corrections.</CardDescription>
+                </div>
+                <Button size="sm" onClick={() => setManualEntryOpen(true)} disabled={status === TimesheetStatus.LOCKED}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Entry
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -303,6 +326,12 @@ export default function TimesheetDetailPage() {
           onSubmit={handleSubmitAdjustment}
         />
       )}
+
+      <ManualEntryDialog 
+        open={manualEntryOpen} 
+        onOpenChange={setManualEntryOpen}
+        onSubmit={handleManualEntrySubmit}
+      />
     </div>
   )
 }

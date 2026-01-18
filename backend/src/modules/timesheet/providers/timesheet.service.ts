@@ -7,10 +7,11 @@ import { TimesheetAdjustment } from '@/entities/timesheet-adjustment.entity';
 import { PayPeriod } from '@/entities/pay-period.entity';
 import { Employee } from '@/entities/employee.entity';
 import { TimeEvent } from '@/entities/time-event.entity';
-import { TimesheetStatus, TimeEventType, TimesheetAdjustmentField, TimesheetAdjustmentMode } from '@/types/enums';
+import { TimesheetStatus, TimeEventType, TimesheetAdjustmentField, TimesheetAdjustmentMode, PayPeriodStatus } from '@/types/enums';
 import { CreateAdjustmentDto } from '../dtos/create-adjustment.dto';
 import { AuditService } from '@/modules/audit/providers/audit.service';
 import { AuditAction } from '@/entities/audit-log.entity';
+import { CreateManualEntryDto } from '../dtos/create-manual-entry.dto';
 
 @Injectable()
 export class TimesheetService {
@@ -86,6 +87,44 @@ export class TimesheetService {
     }
 
     return createdTimesheets;
+  }
+
+  /**
+   * Generate timesheets for a custom date range.
+   * implicitly creates a PayPeriod if one doesn't match exactly.
+   */
+  async generateCustom(companyId: number, dto: { startDate: string; endDate: string }, userId: number): Promise<Timesheet[]> {
+    const { startDate, endDate } = dto;
+
+    if (endDate < startDate) {
+      throw new BadRequestException('End date must be after start date');
+    }
+
+    // Check availability of PayPeriod
+    let payPeriod = await this.payPeriodRepo.findOne({
+      where: {
+        companyId,
+        startDate,
+        endDate,
+      },
+    });
+
+    if (!payPeriod) {
+      console.log(`Creating ad-hoc PayPeriod for ${startDate} - ${endDate}`);
+      payPeriod = this.payPeriodRepo.create({
+        companyId,
+        startDate,
+        endDate,
+        status: PayPeriodStatus.OPEN,
+      });
+    }
+    
+    if (!payPeriod.id) {
+       // It's new
+       await this.payPeriodRepo.save(payPeriod);
+    }
+
+    return this.generateForPeriod(companyId, payPeriod.id);
   }
 
   /**
@@ -267,6 +306,101 @@ export class TimesheetService {
     });
 
     return saved;
+  }
+
+  /**
+   * Add a manual entry for a specific day.
+   * This upserts the TimesheetDay and creates OVERRIDE adjustments to log the change.
+   */
+  async addManualEntry(
+    timesheetId: number,
+    dto: CreateManualEntryDto,
+    userId: number,
+    companyId: number,
+  ): Promise<TimesheetDay> {
+    const timesheet = await this.timesheetRepo.findOne({
+      where: { id: timesheetId, payPeriod: { companyId } },
+      relations: ['payPeriod'],
+    });
+
+    if (!timesheet) {
+      throw new NotFoundException(`Timesheet #${timesheetId} not found`);
+    }
+
+    if (timesheet.status === TimesheetStatus.LOCKED) {
+      throw new BadRequestException('Cannot add entries to a locked timesheet');
+    }
+
+    // Verify date is within pay period
+    const entryDate = new Date(dto.workDate);
+    const startDate = new Date(timesheet.payPeriod.startDate);
+    const endDate = new Date(timesheet.payPeriod.endDate);
+    
+    // Normalize to YYYY-MM-DD comparison
+    if (dto.workDate < timesheet.payPeriod.startDate || dto.workDate > timesheet.payPeriod.endDate) {
+       throw new BadRequestException(`Date ${dto.workDate} is outside the pay period range`);
+    }
+
+    let day = await this.timesheetDayRepo.findOneBy({ 
+      timesheetId, 
+      workDate: dto.workDate 
+    });
+
+    if (!day) {
+      day = this.timesheetDayRepo.create({
+        timesheetId,
+        workDate: dto.workDate,
+        regularMinutes: 0,
+        overtimeMinutes: 0,
+        breakMinutes: 0,
+      });
+      await this.timesheetDayRepo.save(day);
+    }
+
+    // Capture old values for audit details if needed, but adjustment log handles it.
+    
+    // Create Adjustment for Regular Minutes
+    const regularAdjustment = this.adjustmentRepo.create({
+      timesheetDayId: day.id,
+      field: TimesheetAdjustmentField.REGULAR,
+      mode: TimesheetAdjustmentMode.OVERRIDE,
+      overrideMinutes: dto.regularMinutes,
+      reason: dto.reason,
+      createdByUserId: userId,
+    });
+    await this.adjustmentRepo.save(regularAdjustment);
+    day.regularMinutes = dto.regularMinutes;
+
+    // Create Adjustment for Overtime (even if 0, to be explicit if we are "setting" the day)
+    // Or only if provided? DTO requires it, so we set it.
+    const overtimeAdjustment = this.adjustmentRepo.create({
+      timesheetDayId: day.id,
+      field: TimesheetAdjustmentField.OVERTIME,
+      mode: TimesheetAdjustmentMode.OVERRIDE,
+      overrideMinutes: dto.overtimeMinutes,
+      reason: dto.reason,
+      createdByUserId: userId,
+    });
+    await this.adjustmentRepo.save(overtimeAdjustment);
+    day.overtimeMinutes = dto.overtimeMinutes;
+
+    await this.timesheetDayRepo.save(day);
+
+    // Audit Log
+    await this.auditService.log({
+      userId,
+      action: AuditAction.UPDATE,
+      entityType: 'TimesheetDay',
+      entityId: day.id,
+      description: `Manual entry added for ${dto.workDate}`,
+      changes: { 
+        regularMinutes: { old: null, new: dto.regularMinutes }, 
+        overtimeMinutes: { old: null, new: dto.overtimeMinutes },
+        reason: { old: null, new: dto.reason } 
+      },
+    });
+
+    return day;
   }
 
   /**

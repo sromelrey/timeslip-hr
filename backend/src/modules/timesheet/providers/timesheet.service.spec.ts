@@ -1,26 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TimesheetService } from './timesheet.service';
-import { TimeEventType } from '@/types/enums';
+import { TimeEventType, TimesheetStatus } from '@/types/enums';
 import { TimeEvent } from '@/entities/time-event.entity';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 /**
- * Unit tests for TimesheetService.calculateDayHours
- * Tests the time state machine and edge case handling.
+ * Unit tests for TimesheetService
  */
 describe('TimesheetService', () => {
   let service: TimesheetService;
+  let mockTimesheetRepo: any;
+  let mockDayRepo: any;
+  let mockAdjRepo: any;
+  let mockAudit: any;
 
   beforeEach(() => {
-    // Create a partial mock of the service to test calculateDayHours private method
-    // We use 'as any' casting because we're mocking the repository dependencies
+    mockTimesheetRepo = { findOne: jest.fn() };
+    mockDayRepo = { findOneBy: jest.fn(), create: jest.fn(), save: jest.fn() };
+    mockAdjRepo = { create: jest.fn(), save: jest.fn() };
+    mockAudit = { log: jest.fn() };
+
     service = new (TimesheetService as any)(
-      {}, // timesheetRepo
-      {}, // timesheetDayRepo
-      {}, // timesheetAdjustmentRepo
+      mockTimesheetRepo,
+      mockDayRepo,
+      mockAdjRepo,
       {}, // payPeriodRepo
       {}, // employeeRepo
       {}, // timeEventRepo
-      {}, // auditService
+      mockAudit,
     );
   });
 
@@ -28,6 +35,65 @@ describe('TimesheetService', () => {
   const createEvent = (type: TimeEventType, time: string): Partial<TimeEvent> => ({
     type,
     happenedAt: new Date(time),
+  });
+
+  describe('addManualEntry', () => {
+    const dto = {
+      workDate: '2025-01-20',
+      regularMinutes: 480,
+      overtimeMinutes: 0,
+      reason: 'Forgot to clock in',
+    };
+
+    it('should successfully add a manual entry for a new day', async () => {
+      // Mock timesheet found
+      mockTimesheetRepo.findOne.mockResolvedValue({
+        id: 1,
+        status: TimesheetStatus.DRAFT,
+        payPeriod: { startDate: '2025-01-16', endDate: '2025-01-31', companyId: 1 },
+      });
+
+      // Mock day not found
+      mockDayRepo.findOneBy.mockResolvedValue(null);
+      // Mock create day
+      const newDay = { id: 100, regularMinutes: 0, overtimeMinutes: 0 };
+      mockDayRepo.create.mockReturnValue(newDay);
+      mockDayRepo.save.mockResolvedValue(newDay);
+
+      // Mock adjustments
+      mockAdjRepo.create.mockReturnValue({ id: 1 });
+
+      const result = await service.addManualEntry(1, dto, 99, 1);
+
+      expect(result).toBeDefined();
+      expect(mockDayRepo.save).toHaveBeenCalledTimes(2); // Once for create, once for update
+      expect(mockAdjRepo.save).toHaveBeenCalledTimes(2); // Regular and Overtime
+      expect(mockAudit.log).toHaveBeenCalled();
+    });
+
+    it('should throw error if timesheet not found', async () => {
+      mockTimesheetRepo.findOne.mockResolvedValue(null);
+      await expect(service.addManualEntry(1, dto, 99, 1)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw error if timesheet is locked', async () => {
+      mockTimesheetRepo.findOne.mockResolvedValue({
+        id: 1,
+        status: TimesheetStatus.LOCKED,
+        payPeriod: { startDate: '2025-01-16', endDate: '2025-01-31', companyId: 1 },
+      });
+      await expect(service.addManualEntry(1, dto, 99, 1)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw error if date is outside pay period', async () => {
+      mockTimesheetRepo.findOne.mockResolvedValue({
+        id: 1,
+        status: TimesheetStatus.DRAFT,
+        payPeriod: { startDate: '2025-01-01', endDate: '2025-01-15', companyId: 1 },
+      });
+      // dto date is 2025-01-20
+      await expect(service.addManualEntry(1, dto, 99, 1)).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('calculateDayHours', () => {
