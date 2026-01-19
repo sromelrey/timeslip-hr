@@ -5,7 +5,8 @@ import { Payslip } from '@/entities/payslip.entity';
 import { PayslipItem } from '@/entities/payslip-item.entity';
 import { PayPeriod } from '@/entities/pay-period.entity';
 import { Employee } from '@/entities/employee.entity';
-import { PayslipStatus, PayslipItemType } from '@/types/enums';
+import { Timesheet } from '@/entities/timesheet.entity';
+import { PayslipStatus, PayslipItemType, TimesheetStatus } from '@/types/enums';
 import { PayrollService } from './payroll.service';
 import { DeductionService } from './deduction.service';
 import { GeneratePayslipsDto } from '../dtos/generate-payslips.dto';
@@ -23,6 +24,8 @@ export class PayslipService {
     private readonly payPeriodRepo: Repository<PayPeriod>,
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
+    @InjectRepository(Timesheet)
+    private readonly timesheetRepo: Repository<Timesheet>,
     private readonly payrollService: PayrollService,
     private readonly deductionService: DeductionService,
     private readonly dataSource: DataSource,
@@ -36,6 +39,7 @@ export class PayslipService {
       .leftJoinAndSelect('ps.payPeriod', 'payPeriod')
       .leftJoinAndSelect('ps.items', 'items')
       .where('employee.company_id = :companyId', { companyId })
+      .andWhere('ps.deleted_at IS NULL')
       .orderBy('ps.created_at', 'DESC');
 
     if (payPeriodId) {
@@ -83,17 +87,6 @@ export class PayslipService {
       throw new NotFoundException(`Pay period #${payPeriodId} not found`);
     }
 
-    // Check if payslips already exist for this period
-    const existing = await this.payslipRepo.find({
-      where: { payPeriodId },
-    });
-
-    if (existing.length > 0 && !employeeIds) {
-      throw new BadRequestException(
-        `Payslips already exist for pay period #${payPeriodId}. Use employeeIds to generate for specific employees.`
-      );
-    }
-
     // Calculate payroll for period
     const calculations = await this.payrollService.calculatePayForPeriod(
       payPeriodId,
@@ -119,10 +112,20 @@ export class PayslipService {
       });
 
       if (existingPayslip) {
-        console.log(
-          `Payslip already exists for employee #${calc.employeeId}, skipping...`
-        );
-        continue;
+        if (existingPayslip.status === PayslipStatus.DRAFT) {
+          // Regenerate: Delete existing items and payslip to allow recreation
+          await this.payslipItemRepo.delete({ payslipId: existingPayslip.id });
+          await this.payslipRepo.remove(existingPayslip);
+        } else if (existingPayslip.status === PayslipStatus.VOID) {
+          // Voided payslips block unique constraint, so soft-delete them to "archive" them
+          // and allow generating a new one.
+          await this.payslipRepo.softRemove(existingPayslip);
+        } else {
+          console.log(
+            `Payslip #${existingPayslip.id} is ${existingPayslip.status}, skipping regeneration for employee #${calc.employeeId}...`
+          );
+          continue;
+        }
       }
 
       // Calculate deductions for this employee
@@ -214,6 +217,25 @@ export class PayslipService {
 
     if (payslip.status === PayslipStatus.VOID) {
       throw new BadRequestException('Cannot finalize a voided payslip');
+    }
+
+    // Check timesheet status
+    const timesheet = await this.timesheetRepo.findOne({
+      where: {
+        employeeId: payslip.employeeId,
+        payPeriodId: payslip.payPeriodId,
+      },
+    });
+
+    if (!timesheet) {
+      // Should effectively not happen if foreign keys are intact, but good safety
+      throw new BadRequestException('Associated timesheet not found');
+    }
+
+    if (timesheet.status !== TimesheetStatus.APPROVED) {
+      throw new BadRequestException(
+        `Cannot finalize payslip: Timesheet is not approved (Current status: ${timesheet.status})`
+      );
     }
 
     const oldStatus = payslip.status;
