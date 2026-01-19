@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, Between } from 'typeorm';
 import { Seeder } from './seed.config';
 import { TimeEvent } from '../../entities/time-event.entity';
 import { Employee } from '../../entities/employee.entity';
@@ -8,54 +8,55 @@ import { randomUUID } from 'crypto';
 export const TimeEventSeeder: Seeder = {
   name: 'TimeEventSeeder',
 
-  async run(dataSource: DataSource): Promise<void> {
+  async run(dataSource: DataSource, companyId?: number): Promise<void> {
     const timeEventRepo = dataSource.getRepository(TimeEvent);
     const employeeRepo = dataSource.getRepository(Employee);
 
-    // Get active employees
-    const employees = await employeeRepo.find({ where: { isActive: true } });
+    // Get active employees (optionally filtered by company)
+    const whereClause: { isActive: boolean; companyId?: number } = { isActive: true };
+    if (companyId) {
+      whereClause.companyId = companyId;
+      console.log(`  Filtering to company ID: ${companyId}`);
+    }
+    const employees = await employeeRepo.find({ where: whereClause });
     if (employees.length === 0) {
-      console.log('  ❌ No employees found. Run EmployeeSeeder first.');
+      console.log('  ❌ No employees found. Run EmployeeSeeder first or check company ID.');
       return;
     }
 
-    // Create time events for the current month (past days only)
+    // Generate events for the last 15 days to ensure we have data
     const now = new Date();
-    const currentDay = now.getDate();
+    const daysToGenerate = 15;
     
-    // Generate events for the last 5 working days (or less if month just started)
-    const daysToGenerate = Math.min(5, currentDay - 1);
-    
-    if (daysToGenerate <= 0) {
-      console.log('  ⏭️  No past days in current month to generate events for.');
-      return;
-    }
-
     let totalCreated = 0;
 
     for (const employee of employees) {
       console.log(`  Creating time events for ${employee.firstName} ${employee.lastName}...`);
 
       for (let dayOffset = 1; dayOffset <= daysToGenerate; dayOffset++) {
-        const workDate = new Date(now.getFullYear(), now.getMonth(), currentDay - dayOffset);
+        // Go back dayOffset days from today
+        const workDate = new Date(now);
+        workDate.setDate(now.getDate() - dayOffset);
         
         // Skip weekends
         const dayOfWeek = workDate.getDay();
         if (dayOfWeek === 0 || dayOfWeek === 6) continue;
 
-        // Check if events already exist for this day
-        const existingEvents = await timeEventRepo.find({
+        // Check if events already exist for this day (simple check)
+        // We use a broader check to avoid duplicates if re-run
+        const startOfDay = new Date(workDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(workDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const existingEvents = await timeEventRepo.count({
           where: {
             employeeId: employee.id,
+            happenedAt: Between(startOfDay, endOfDay),
           },
         });
         
-        const dayStr = workDate.toISOString().split('T')[0];
-        const hasEventsForDay = existingEvents.some(e => 
-          e.happenedAt.toISOString().split('T')[0] === dayStr
-        );
-        
-        if (hasEventsForDay) continue;
+        if (existingEvents > 0) continue;
 
         // Create a realistic work day with clock in, break, and clock out
         // Clock in at 9:00 AM

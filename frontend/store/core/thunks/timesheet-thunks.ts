@@ -109,6 +109,23 @@ export const generateTimesheets = createAsyncThunk(
   }
 );
 
+export interface GenerateCustomTimesheetDto {
+  startDate: string;
+  endDate: string;
+}
+
+export const generateCustomTimesheets = createAsyncThunk(
+  'timesheet/generateCustomTimesheets',
+  async (dto: GenerateCustomTimesheetDto, { rejectWithValue }) => {
+    try {
+      const response = await api.post<Timesheet[]>('/timesheets/generate-custom', dto);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to generate custom timesheets');
+    }
+  }
+);
+
 export const populateTimesheetDays = createAsyncThunk(
   'timesheet/populateTimesheetDays',
   async (timesheetId: number, { rejectWithValue }) => {
@@ -158,6 +175,25 @@ export const createAdjustment = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create adjustment');
+    }
+  }
+);
+
+export interface CreateManualEntryDto {
+  workDate: string;
+  regularMinutes: number;
+  overtimeMinutes: number;
+  reason: string;
+}
+
+export const addManualEntry = createAsyncThunk(
+  'timesheet/addManualEntry',
+  async ({ timesheetId, dto }: { timesheetId: number; dto: CreateManualEntryDto }, { rejectWithValue }) => {
+    try {
+      const response = await api.post<TimesheetDay>(`/timesheets/${timesheetId}/manual-entry`, dto);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to add manual entry');
     }
   }
 );

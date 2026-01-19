@@ -1,0 +1,98 @@
+### Admin Login
+# @name adminLogin
+POST {{API_BASE_URL}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{TEST_ADMIN_EMAIL}}",
+  "password": "{{TEST_USER_PASSWORD}}"
+}
+
+### Get Enhanced Dashboard Stats
+GET {{API_BASE_URL}}/dashboard/stats
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+
+### Get Currently Active Employees
+GET {{API_BASE_URL}}/dashboard/currently-active
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+
+### Export All Timesheets (Last 30 Days)
+POST {{API_BASE_URL}}/reports/timesheet-export
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-31",
+  "sortBy": "employeeName",
+  "sortOrder": "asc"
+}
+
+### Export Approved Timesheets Only
+POST {{API_BASE_URL}}/reports/timesheet-export
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "status": "APPROVED",
+  "sortBy": "totalHours",
+  "sortOrder": "desc"
+}
+
+### Export Timesheets by Pay Period
+POST {{API_BASE_URL}}/reports/timesheet-export
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "payPeriodId": 1,
+  "sortBy": "employeeName",
+  "sortOrder": "asc"
+}
+
+### Export Timesheets for Specific Employee
+POST {{API_BASE_URL}}/reports/timesheet-export
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "employeeId": 1,
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-31"
+}
+
+### Generate Attendance Summary (Weekly)
+POST {{API_BASE_URL}}/reports/attendance-summary
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-07",
+  "includeAnomalies": true,
+  "sortOrder": "asc"
+}
+
+### Generate Attendance Summary (Monthly)
+POST {{API_BASE_URL}}/reports/attendance-summary
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-31",
+  "includeAnomalies": true,
+  "sortOrder": "asc"
+}
+
+### Generate Attendance Summary (Without Anomalies)
+POST {{API_BASE_URL}}/reports/attendance-summary
+Authorization: Bearer {{adminLogin.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-07",
+  "includeAnomalies": false,
+  "sortOrder": "asc"
+}

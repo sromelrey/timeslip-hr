@@ -3,6 +3,14 @@
 A fullstack starter template for building a **Mini HRIS** with **JWT (JSON Web Token)** authentication.  
 It supports **employee time logging** (clock in/out, break in/out) and **admin payroll workflows** (timesheets, pay periods, payslip generation), using a modern NestJS + Next.js stack.
 
+## 📚 Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [**Admin Guide**](./ADMIN_GUIDE.md) | Complete admin documentation: dashboard, employees, timesheets, payroll, settings |
+| [**Employee Guide**](./EMPLOYEE_GUIDE.md) | Employee documentation: time logging, portal, payslips, FAQs |
+| [**Developer Setup**](./DEVELOPER_README.md) | Developer guide: local setup, environment variables, testing, deployment |
+
 ## What this app does (core scope)
 
 ### Employee-facing

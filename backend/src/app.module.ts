@@ -6,6 +6,12 @@ import { ProductModule } from './modules/product/product.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { TimeEventModule } from './modules/time-event/time-event.module';
 import { TimesheetModule } from './modules/timesheet/timesheet.module';
+import { PayrollModule } from './modules/payroll/payroll.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 
 @Module({
   imports: [
@@ -38,6 +44,12 @@ import { TimesheetModule } from './modules/timesheet/timesheet.module';
     EmployeeModule,
     TimeEventModule,
     TimesheetModule,
+    PayrollModule,
+    DashboardModule,
+    ReportsModule,
+    SettingsModule,
+    AuditModule,
+    SuperAdminModule,
   ],
 })
 export class AppModule {}

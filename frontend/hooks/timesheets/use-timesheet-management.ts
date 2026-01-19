@@ -7,14 +7,18 @@ import {
   generateTimesheets,
   fetchRawEvents,
   createAdjustment as createAdjustmentThunk,
+  addManualEntry as addManualEntryThunk,
+  generateCustomTimesheets,
   TimesheetStatus,
   CreateAdjustmentDto,
+  CreateManualEntryDto,
+  GenerateCustomTimesheetDto,
 } from '@/store/core/thunks/timesheet-thunks';
 import { clearError, clearSelectedTimesheet } from '@/store/core/slices/timesheet-slice';
 
 export function useTimesheetManagement() {
   const dispatch = useDispatch<AppDispatch>();
-  const { timesheets, selectedTimesheet, rawEvents, loading, error } = useSelector(
+  const { timesheets, selectedTimesheet, rawEvents, loading, actionLoadingIds, error } = useSelector(
     (state: RootState) => state.timesheet
   );
 
@@ -74,6 +78,12 @@ export function useTimesheetManagement() {
     [dispatch]
   );
 
+  const handleAddManualEntry = useCallback(
+    async (timesheetId: number, dto: CreateManualEntryDto) => {
+      return dispatch(addManualEntryThunk({ timesheetId, dto })).unwrap();
+    },
+    [dispatch]
+  );
   const handleClearError = useCallback(() => {
     dispatch(clearError());
   }, [dispatch]);
@@ -82,20 +92,30 @@ export function useTimesheetManagement() {
     dispatch(clearSelectedTimesheet());
   }, [dispatch]);
 
+  const handleGenerateCustomTimesheets = useCallback(
+    async (dto: GenerateCustomTimesheetDto) => {
+       return dispatch(generateCustomTimesheets(dto)).unwrap();
+    },
+    [dispatch]
+  );
+
   return {
     timesheets,
     selectedTimesheet,
     rawEvents,
     isLoading: loading,
+    actionLoadingIds,
     error,
     loadTimesheets,
     loadTimesheetById,
     loadRawEvents,
     generateTimesheets: handleGenerateTimesheets,
+    generateCustomTimesheets: handleGenerateCustomTimesheets,
     updateEntry: handleUpdateEntry,
     updateStatus: handleUpdateStatus,
     populateDays: handlePopulateDays,
     createAdjustment: handleCreateAdjustment,
+    addManualEntry: handleAddManualEntry,
     clearError: handleClearError,
     clearSelectedTimesheet: handleClearSelected,
     TimesheetStatus,

@@ -16,6 +16,7 @@ interface TimesheetState {
   selectedTimesheet: Timesheet | null;
   rawEvents: TimeEvent[];
   loading: boolean;
+  actionLoadingIds: number[]; // Track which rows have actions in progress
   error: string | null;
 }
 
@@ -24,6 +25,7 @@ const initialState: TimesheetState = {
   selectedTimesheet: null,
   rawEvents: [],
   loading: false,
+  actionLoadingIds: [],
   error: null,
 };
 
@@ -91,26 +93,38 @@ const timesheetSlice = createSlice({
           }
       })
       // Update Status
+      .addCase(updateTimesheetStatus.pending, (state, action) => {
+          state.actionLoadingIds.push(action.meta.arg.id);
+      })
       .addCase(updateTimesheetStatus.fulfilled, (state, action) => {
+          state.actionLoadingIds = state.actionLoadingIds.filter(id => id !== action.payload.id);
           state.selectedTimesheet = action.payload;
           const index = state.timesheets.findIndex(t => t.id === action.payload.id);
           if (index !== -1) {
               state.timesheets[index] = action.payload;
           }
       })
+      .addCase(updateTimesheetStatus.rejected, (state, action) => {
+          state.actionLoadingIds = state.actionLoadingIds.filter(id => id !== action.meta.arg.id);
+          state.error = action.payload as string;
+      })
       // Populate Days
-      .addCase(populateTimesheetDays.pending, (state) => {
-          state.loading = true;
+      .addCase(populateTimesheetDays.pending, (state, action) => {
+          state.actionLoadingIds.push(action.meta.arg);
           state.error = null;
       })
       .addCase(populateTimesheetDays.fulfilled, (state, action) => {
-          state.loading = false;
+          state.actionLoadingIds = state.actionLoadingIds.filter(id => id !== action.payload.timesheetId);
           if (state.selectedTimesheet?.id === action.payload.timesheetId) {
               state.selectedTimesheet.days = action.payload.days;
           }
+          const index = state.timesheets.findIndex(t => t.id === action.payload.timesheetId);
+          if (index !== -1) {
+              state.timesheets[index].days = action.payload.days;
+          }
       })
       .addCase(populateTimesheetDays.rejected, (state, action) => {
-          state.loading = false;
+          state.actionLoadingIds = state.actionLoadingIds.filter(id => id !== action.meta.arg);
           state.error = action.payload as string;
       })
       // Fetch Raw Events

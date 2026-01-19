@@ -2,8 +2,10 @@ import { seedDataSource, Seeder } from './seed.config';
 import { CompanySeeder } from './company.seeder';
 import { UserSeeder } from './user.seeder';
 import { EmployeeSeeder } from './employee.seeder';
+import { DeductionSeeder } from './deduction.seeder';
 import { PayPeriodSeeder } from './pay-period.seeder';
 import { CompensationSeeder } from './compensation.seeder';
+import { TimeEventSeeder } from './time-event.seeder';
 
 /**
  * List of seeders to run in order.
@@ -13,8 +15,10 @@ const seeders: Seeder[] = [
   CompanySeeder,
   UserSeeder,
   EmployeeSeeder,
+  DeductionSeeder,
   PayPeriodSeeder,
   CompensationSeeder,
+  TimeEventSeeder,
 ];
 
 async function runSeeders() {
