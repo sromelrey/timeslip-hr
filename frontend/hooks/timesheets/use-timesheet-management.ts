@@ -5,13 +5,16 @@ import {
   fetchTimesheets,
   fetchTimesheetById,
   generateTimesheets,
+  fetchRawEvents,
+  createAdjustment as createAdjustmentThunk,
   TimesheetStatus,
+  CreateAdjustmentDto,
 } from '@/store/core/thunks/timesheet-thunks';
 import { clearError, clearSelectedTimesheet } from '@/store/core/slices/timesheet-slice';
 
 export function useTimesheetManagement() {
   const dispatch = useDispatch<AppDispatch>();
-  const { timesheets, selectedTimesheet, loading, error } = useSelector(
+  const { timesheets, selectedTimesheet, rawEvents, loading, error } = useSelector(
     (state: RootState) => state.timesheet
   );
 
@@ -22,6 +25,13 @@ export function useTimesheetManagement() {
   const loadTimesheetById = useCallback(
     (id: number) => {
       dispatch(fetchTimesheetById(id));
+    },
+    [dispatch]
+  );
+
+  const loadRawEvents = useCallback(
+    (timesheetId: number) => {
+      dispatch(fetchRawEvents(timesheetId));
     },
     [dispatch]
   );
@@ -57,6 +67,13 @@ export function useTimesheetManagement() {
     [dispatch]
   );
 
+  const handleCreateAdjustment = useCallback(
+    async (dayId: number, dto: CreateAdjustmentDto) => {
+      return dispatch(createAdjustmentThunk({ dayId, dto })).unwrap();
+    },
+    [dispatch]
+  );
+
   const handleClearError = useCallback(() => {
     dispatch(clearError());
   }, [dispatch]);
@@ -68,17 +85,19 @@ export function useTimesheetManagement() {
   return {
     timesheets,
     selectedTimesheet,
+    rawEvents,
     isLoading: loading,
     error,
     loadTimesheets,
     loadTimesheetById,
+    loadRawEvents,
     generateTimesheets: handleGenerateTimesheets,
     updateEntry: handleUpdateEntry,
     updateStatus: handleUpdateStatus,
     populateDays: handlePopulateDays,
+    createAdjustment: handleCreateAdjustment,
     clearError: handleClearError,
     clearSelectedTimesheet: handleClearSelected,
     TimesheetStatus,
   };
 }
-
