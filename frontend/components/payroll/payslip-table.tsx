@@ -8,12 +8,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { CheckCircle2, XCircle, Loader2, Download } from "lucide-react";
 import type { Payslip } from "@/lib/payroll.api";
 import { usePayslipActions } from "@/hooks/use-payslip-actions";
+import { useState } from "react";
 
 interface PayslipTableProps {
   payslips: Payslip[];
@@ -30,6 +39,15 @@ export function PayslipTable({ payslips, loading }: PayslipTableProps) {
     actionLoading,
     pdfLoading,
   } = usePayslipActions();
+
+  const [confirmFinalizeId, setConfirmFinalizeId] = useState<number | null>(null);
+
+  const executeFinalize = async () => {
+    if (confirmFinalizeId) {
+      await handleFinalize(confirmFinalizeId);
+      setConfirmFinalizeId(null);
+    }
+  };
 
   if (loading && payslips.length === 0) {
     return (
@@ -100,7 +118,7 @@ export function PayslipTable({ payslips, loading }: PayslipTableProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleFinalize(payslip.id)}
+                      onClick={() => setConfirmFinalizeId(payslip.id)}
                       disabled={actionLoading === payslip.id}
                     >
                       {actionLoading === payslip.id ? (
@@ -156,6 +174,35 @@ export function PayslipTable({ payslips, loading }: PayslipTableProps) {
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={!!confirmFinalizeId} onOpenChange={(open) => !open && setConfirmFinalizeId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Finalize Payslip?</DialogTitle>
+            <DialogDescription className="space-y-3 pt-3">
+              <p>Are you sure you want to finalize this payslip?</p>
+              <div className="bg-amber-50 dark:bg-amber-900/10 p-3 rounded-md text-sm border border-amber-200 dark:border-amber-900/20">
+                <p className="font-semibold text-amber-800 dark:text-amber-200 mb-1 flex items-center">
+                   ⚠️ Usage Warning:
+                </p>
+                <ul className="list-disc pl-4 space-y-1 text-amber-700 dark:text-amber-300">
+                  <li>This action is <strong>permanent</strong> and cannot be undone.</li>
+                  <li>The payslip will be locked and can no longer be edited or regenerated.</li>
+                  <li>Any future corrections will require voiding this record entirely.</li>
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmFinalizeId(null)}>
+              Cancel
+            </Button>
+            <Button onClick={executeFinalize}>
+              Confirm Finalize
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

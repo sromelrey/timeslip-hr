@@ -123,6 +123,7 @@ export function PayslipTab() {
         open={generateDialogOpen}
         onOpenChange={setGenerateDialogOpen}
         payPeriods={payPeriods}
+        onSuccess={handleRefresh}
       />
     </div>
   );

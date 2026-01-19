@@ -27,12 +27,14 @@ interface GeneratePayslipsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   payPeriods: PayPeriod[];
+  onSuccess?: () => void;
 }
 
 export function GeneratePayslipsDialog({
   open,
   onOpenChange,
   payPeriods,
+  onSuccess,
 }: GeneratePayslipsDialogProps) {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
@@ -56,7 +58,10 @@ export function GeneratePayslipsDialog({
       );
       onOpenChange(false);
       setSelectedPeriod("");
-      alert(`Successfully generated payslips`);
+      // alert(`Successfully generated payslips`);
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to generate payslips');
     } finally {
