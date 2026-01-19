@@ -84,7 +84,6 @@ export function useTimesheetManagement() {
     },
     [dispatch]
   );
-
   const handleClearError = useCallback(() => {
     dispatch(clearError());
   }, [dispatch]);
